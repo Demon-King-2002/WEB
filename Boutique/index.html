@@ -13,8 +13,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Forzar la eliminación del botón flotante de Netlify */
-    div[class*="netlify"], #netlify-badge, [id*="netlify"], [class*="netlify-badge"], iframe[src*="netlify"] { 
+    /* Forzar la eliminación del botón flotante de Netlify y cualquier marca de agua */
+    div[class*="netlify"], #netlify-badge, [id*="netlify"], [class*="netlify-badge"], iframe[src*="netlify"],
+    body > div:last-child:not(.modal-overlay):not(.toast),
+    a[href*="netlify"], div[style*="z-index: 99999"], div[style*="position: fixed"][style*="bottom"] { 
       display: none !important; 
       pointer-events: none !important; 
       visibility: hidden !important; 
@@ -223,6 +225,8 @@
       align-items: center;
       justify-content: center;
       font-size: 18px;
+      position: relative;
+      z-index: 101;
     }
 
     .btn-login-icon:hover {
@@ -1012,18 +1016,26 @@
     let currentGender = 'todos';
     let currentUser = null;
 
-    /* INICIALIZACIÓN CON EVENT LISTENERS ROBUSTOS (EVITA PROBLEMAS DE CLICKS) */
+    /* INICIALIZACIÓN CON EVENT LISTENERS ROBUSTOS Y DELEGACIÓN GLOBAL */
     document.addEventListener('DOMContentLoaded', () => {
-      // 1. Abrir modal login con el botón de ícono
-      const btnLoginTrigger = document.getElementById('btnLoginTrigger');
-      if (btnLoginTrigger) {
-        btnLoginTrigger.addEventListener('click', (e) => {
+      // Delegación de eventos global para asegurar que los clics en el botón de login nunca fallen aunque se reemplace el HTML
+      document.body.addEventListener('click', (e) => {
+        const loginTrigger = e.target.closest('#btnLoginTrigger');
+        if (loginTrigger) {
           e.preventDefault();
           openLoginModal();
-        });
-      }
+          return;
+        }
 
-      // 2. Cerrar modales
+        const logoutBtn = e.target.closest('#btnLogout');
+        if (logoutBtn) {
+          e.preventDefault();
+          logoutUser();
+          return;
+        }
+      });
+
+      // 2. Cerrar modales por botones dedicados
       document.querySelectorAll('.btn-close-login-modal').forEach(btn => {
         btn.addEventListener('click', closeLoginModal);
       });
@@ -1032,12 +1044,19 @@
       });
 
       // 3. Cerrar al hacer clic fuera del contenido del modal (overlay)
-      document.getElementById('loginModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('loginModal')) closeLoginModal();
-      });
-      document.getElementById('productModal').addEventListener('click', (e) => {
-        if (e.target === document.getElementById('productModal')) closeProductModal();
-      });
+      const loginModalEl = document.getElementById('loginModal');
+      if (loginModalEl) {
+        loginModalEl.addEventListener('click', (e) => {
+          if (e.target === loginModalEl) closeLoginModal();
+        });
+      }
+
+      const productModalEl = document.getElementById('productModal');
+      if (productModalEl) {
+        productModalEl.addEventListener('click', (e) => {
+          if (e.target === productModalEl) closeProductModal();
+        });
+      }
 
       // 4. Botón de agregar producto nuevo
       const btnAddProduct = document.getElementById('btnAddProduct');
@@ -1081,6 +1100,17 @@
       if (productForm) {
         productForm.addEventListener('submit', saveProduct);
       }
+
+      // Limpieza periódica de elementos inyectados por Netlify (por si acaso)
+      setInterval(() => {
+        document.querySelectorAll('body > div').forEach(el => {
+          if (el.id !== 'productModal' && el.id !== 'loginModal' && el.id !== 'toastMsg' && !el.classList.contains('glow-sphere-1') && !el.classList.contains('glow-sphere-2') && el.tagName !== 'HEADER' && el.tagName !== 'MAIN' && el.tagName !== 'SCRIPT') {
+            if (el.style.position === 'fixed' || el.style.zIndex > 9000 || el.className.includes('netlify')) {
+              el.remove();
+            }
+          }
+        });
+      }, 1000);
 
       // Cargar productos iniciales
       loadProductsFromSupabase();
@@ -1298,9 +1328,6 @@
         </div>
       `;
 
-      // Vincular logout
-      document.getElementById('btnLogout').addEventListener('click', logoutUser);
-
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'flex';
 
@@ -1316,15 +1343,6 @@
           <i class="fa-solid fa-user-gear"></i>
         </button>
       `;
-
-      // Reasignar evento al botón de icono de login restaurado
-      const newLoginBtn = document.getElementById('btnLoginTrigger');
-      if (newLoginBtn) {
-        newLoginBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          openLoginModal();
-        });
-      }
 
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'none';
