@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,13 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>URBANSTORE - Tienda Premium Oficial</title>
     
-    <!-- Tailwind CSS para diseño responsivo -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- FontAwesome para Íconos Premium -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Supabase JS CDN (Base de datos, Auth y Storage) -->
+    <!-- Supabase JS CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
@@ -22,7 +23,6 @@
             background-color: #f3f4f6; 
         }
         
-        /* Efectos Glassmorphism y Animaciones */
         .glass-overlay { 
             background: rgba(0, 0, 0, 0.75); 
             backdrop-filter: blur(8px); 
@@ -42,7 +42,6 @@
             to { transform: translateY(0); opacity: 1; }
         }
 
-        /* Botones de Tallas Interactivos */
         .size-btn {
             transition: all 0.2s ease;
             border: 2px solid #e5e7eb;
@@ -57,7 +56,6 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        /* Loader CSS */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #000000;
@@ -73,40 +71,37 @@
 </head>
 <body class="text-gray-800 antialiased min-h-screen flex flex-col relative overflow-x-hidden">
 
-    <!-- ==========================================
-         1. BARRA DE NAVEGACIÓN (NAVBAR)
-         ========================================== -->
+    <!-- NAVBAR -->
     <nav class="bg-black text-white sticky top-0 z-40 shadow-2xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20">
                 
-                <!-- Logo: Clickeable para abrir login (Easter Egg) -->
-                <div class="flex-shrink-0 flex items-center cursor-pointer select-none" onclick="openLoginModal()" title="Doble clic para admin">
+                <!-- Logo: Clickeable para abrir login -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer select-none" onclick="openLoginModal()" title="Acceso Administrador">
                     <span class="font-black text-2xl tracking-tighter uppercase">URBAN<span class="text-gray-400">STORE</span></span>
                 </div>
                 
-                <!-- Buscador en tiempo real -->
+                <!-- Buscador -->
                 <div class="flex-1 max-w-xl mx-4 relative hidden sm:block">
                     <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar marca o modelo específico..." 
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar marca o modelo..." 
                         class="w-full bg-gray-900 text-white border border-gray-700 rounded-full py-2.5 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-white transition-all text-sm placeholder-gray-500">
                 </div>
 
-                <!-- Botones de Acción Derecha -->
+                <!-- Botones Derecha -->
                 <div class="flex items-center gap-4">
-                    <!-- BOTÓN EXPLÍCITO PARA LOGIN ADMIN -->
-                    <button id="btnOpenLogin" onclick="openLoginModal()" class="text-gray-300 hover:text-white transition p-2 rounded-full hover:bg-gray-800" title="Acceso Administrador">
+                    <!-- Botón explícito para Admin -->
+                    <button id="btnOpenLogin" onclick="openLoginModal()" class="text-gray-300 hover:text-white transition p-2 rounded-full hover:bg-gray-800 flex items-center gap-2" title="Acceso Administrador">
                         <i class="fa-solid fa-user-lock text-xl"></i>
+                        <span class="text-xs font-bold hidden md:inline">Admin</span>
                     </button>
 
-                    <!-- Botón para cerrar sesión y salir del panel (Oculto por defecto) -->
                     <button id="btnLogout" onclick="logout()" class="hidden-element bg-red-600 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-red-700 transition shadow-lg flex items-center gap-2">
                         <i class="fa-solid fa-right-from-bracket"></i> Salir
                     </button>
                 </div>
             </div>
             
-            <!-- Buscador para Móviles -->
             <div class="pb-4 sm:hidden relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 transform -translate-y-1/2 -mt-2 text-gray-400"></i>
                 <input type="text" id="searchInputMobile" oninput="filterProductsMobile()" placeholder="Buscar producto..." 
@@ -115,9 +110,7 @@
         </div>
     </nav>
 
-    <!-- ==========================================
-         2. MODAL DE INICIO DE SESIÓN (LOGIN HTML)
-         ========================================== -->
+    <!-- MODAL LOGIN -->
     <div id="loginModal" class="fixed inset-0 z-50 glass-overlay hidden-element flex items-center justify-center p-4 fade-in">
         <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 relative slide-up">
             <button onclick="closeLoginModal()" class="absolute top-5 right-5 text-gray-400 hover:text-black transition">
@@ -129,7 +122,7 @@
                     <i class="fa-solid fa-shield-halved text-2xl"></i>
                 </div>
                 <h2 class="text-3xl font-black text-gray-900">Panel Privado</h2>
-                <p class="text-gray-500 text-sm mt-2">Solo personal autorizado</p>
+                <p class="text-gray-500 text-sm mt-2">Ingresa tus credenciales de Supabase</p>
             </div>
             
             <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
@@ -149,7 +142,7 @@
                 </div>
                 
                 <div id="loginError" class="bg-red-50 text-red-600 p-3 rounded-lg text-sm font-semibold hidden-element text-center border border-red-100 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-exclamation"></i> <span>Credenciales incorrectas</span>
+                    <i class="fa-solid fa-circle-exclamation"></i> <span id="loginErrorText">Error al iniciar sesión</span>
                 </div>
                 
                 <button type="submit" id="btnLoginSubmit" class="w-full bg-black text-white font-black py-4 rounded-xl hover:bg-gray-800 transition shadow-xl mt-2 flex justify-center items-center gap-2">
@@ -159,32 +152,24 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         3. VISTA PÚBLICA (CATÁLOGO GLOBAL)
-         ========================================== -->
+    <!-- VISTA PÚBLICA -->
     <main id="public-view" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full fade-in">
-        
         <div id="loader" class="flex flex-col justify-center items-center py-32 hidden-element">
             <div class="loader mb-4"></div>
-            <p class="text-gray-500 font-medium animate-pulse">Sincronizando catálogo global...</p>
+            <p class="text-gray-500 font-medium animate-pulse">Cargando productos...</p>
         </div>
         
-        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8">
-            <!-- Los productos se inyectan aquí vía JavaScript -->
-        </div>
+        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8"></div>
         
         <div id="empty-state" class="hidden-element text-center py-32">
             <i class="fa-solid fa-box-open text-6xl text-gray-300 mb-4"></i>
             <h3 class="text-xl font-bold text-gray-900">Catálogo Vacío</h3>
-            <p class="text-gray-500 mt-2">No se encontraron productos con esa descripción.</p>
+            <p class="text-gray-500 mt-2">No se encontraron productos.</p>
         </div>
     </main>
 
-    <!-- ==========================================
-         4. VISTA DE ADMINISTRADOR (PROTEGIDA)
-         ========================================== -->
+    <!-- VISTA ADMIN -->
     <main id="admin-view" class="hidden-element flex-1 max-w-6xl mx-auto px-4 py-8 w-full fade-in">
-        
         <div class="mb-8 flex items-center justify-between">
             <div>
                 <h1 class="text-3xl font-black text-gray-900">Centro de Control</h1>
@@ -193,8 +178,6 @@
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Panel Izquierdo: Formulario CRUD -->
             <div class="lg:col-span-1">
                 <div class="bg-white p-6 rounded-3xl shadow-lg border border-gray-100 sticky top-28">
                     <h3 class="text-xl font-bold mb-6 flex items-center gap-2" id="form-title">
@@ -229,7 +212,7 @@
                         </div>
                         
                         <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Fotografía (Cámara / Galería)</label>
+                            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Fotografía</label>
                             <div class="relative border-2 border-dashed border-gray-300 rounded-xl p-4 text-center hover:border-black transition bg-gray-50">
                                 <input type="file" id="p_image" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                                 <div class="flex flex-col items-center justify-center space-y-2 pointer-events-none">
@@ -240,13 +223,12 @@
                         </div>
                         
                         <button type="submit" id="btnSubmitProduct" class="w-full bg-black text-white font-black py-4 rounded-xl hover:bg-gray-800 transition shadow-xl mt-6 flex justify-center items-center gap-2">
-                            <i class="fa-solid fa-cloud-arrow-up"></i> Publicar al Mundo
+                            <i class="fa-solid fa-cloud-arrow-up"></i> Publicar Producto
                         </button>
                     </form>
                 </div>
             </div>
 
-            <!-- Panel Derecho: Tabla de Inventario -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
                     <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
@@ -266,9 +248,7 @@
                                     <th class="px-6 py-4 text-right text-xs font-black text-gray-400 uppercase tracking-wider">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-products-list" class="divide-y divide-gray-100 bg-white">
-                                <!-- Filas inyectadas vía JavaScript -->
-                            </tbody>
+                            <tbody id="admin-products-list" class="divide-y divide-gray-100 bg-white"></tbody>
                         </table>
                     </div>
                 </div>
@@ -276,27 +256,20 @@
         </div>
     </main>
 
-    <!-- ==========================================
-         5. MODAL DE PRODUCTO (CHECKOUT WHATSAPP)
-         ========================================== -->
+    <!-- MODAL DE PRODUCTO -->
     <div id="productModal" class="fixed inset-0 z-50 glass-overlay hidden-element flex flex-col justify-end sm:justify-center p-0 sm:p-4">
         <div class="bg-white w-full sm:max-w-lg sm:mx-auto rounded-t-[2.5rem] sm:rounded-3xl overflow-hidden shadow-2xl relative flex flex-col max-h-[95vh] slide-up">
-            
-            <!-- Botón Cerrar -->
             <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-white/80 backdrop-blur-sm text-black rounded-full w-10 h-10 flex items-center justify-center hover:bg-white z-10 font-bold shadow-lg transition">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
             
-            <!-- Imagen del Producto -->
             <div class="h-72 sm:h-96 w-full bg-gray-100 flex-shrink-0 relative">
                 <img id="modal-img" src="" alt="Producto" class="w-full h-full object-cover">
-                <!-- Etiqueta Precio Flotante -->
                 <div class="absolute bottom-4 left-4 bg-black/80 backdrop-blur-md text-white px-4 py-2 rounded-2xl shadow-lg">
                     <span id="modal-price" class="text-2xl font-black"></span>
                 </div>
             </div>
             
-            <!-- Detalles y Checkout -->
             <div class="p-6 sm:p-8 flex-1 overflow-y-auto">
                 <p id="modal-brand" class="text-xs font-black text-gray-400 uppercase tracking-widest mb-1"></p>
                 <h2 id="modal-name" class="text-3xl font-black text-gray-900 leading-none mb-6"></h2>
@@ -306,9 +279,7 @@
                         <h3 class="text-sm font-bold text-gray-900 uppercase">Selecciona tu talla</h3>
                         <span class="text-xs text-gray-500">Requerido</span>
                     </div>
-                    <div id="modal-sizes" class="flex flex-wrap gap-2">
-                        <!-- Botones de tallas dinámicos -->
-                    </div>
+                    <div id="modal-sizes" class="flex flex-wrap gap-2"></div>
                 </div>
                 
                 <button onclick="redirectToWhatsApp()" class="w-full bg-[#25D366] text-white font-black text-lg py-4 rounded-2xl flex justify-center items-center gap-3 hover:bg-[#1fbc59] shadow-lg shadow-green-200 transition-all transform active:scale-95">
@@ -320,42 +291,38 @@
         </div>
     </div>
 
-    <!-- ==========================================
-         6. SCRIPT PRINCIPAL (LÓGICA FULL-STACK)
-         ========================================== -->
+    <!-- SCRIPT PRINCIPAL -->
     <script>
-        // --- CONFIGURACIÓN DE SUPABASE ---
-        // IMPORTANTE: Debes colocar tus credenciales reales aquí.
-        const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.com';
+        const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-        
-        // Número de WhatsApp (Código País + Número sin espacios. Ej: 50212345678)
         const WHATSAPP_NUMBER = '50200000000'; 
         
-        // Inicialización segura del cliente SDK
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Inicializar Supabase correctamente
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Variables Globales de Estado
         let globalProducts = [];
         let currentProduct = null;
         let currentSelectedSize = null;
 
-        // --- INICIALIZACIÓN Y EVENTOS DOM ---
         document.addEventListener('DOMContentLoaded', async () => {
-            await checkSession();
+            // Escuchar cambios de autenticación
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                updateUIState(session);
+            });
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            updateUIState(session);
+            
             fetchProducts();
 
-            // Sincronización Real-Time con CDN Supabase:
-            // Permite que todos los clientes en el mundo vean si agregas/eliminas un producto instantáneamente.
-            supabase.channel('public:products')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, payload => {
-                    console.log("Cambio global detectado:", payload);
+            // Realtime
+            supabaseClient.channel('public:products')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
                     fetchProducts();
                 })
                 .subscribe();
 
-            // UX: Mostrar nombre de archivo seleccionado en el formulario admin
-            document.getElementById('p_image').addEventListener('change', function(e) {
+            document.getElementById('p_image')?.addEventListener('change', function(e) {
                 const fileNameDisplay = document.getElementById('file-name-display');
                 if(e.target.files.length > 0) {
                     fileNameDisplay.textContent = e.target.files[0].name;
@@ -367,11 +334,27 @@
             });
         });
 
-        // --- CONTROL DE MODALES ---
+        function updateUIState(session) {
+            const btnOpenLogin = document.getElementById('btnOpenLogin');
+            const btnLogout = document.getElementById('btnLogout');
+            const adminView = document.getElementById('admin-view');
+            const publicView = document.getElementById('public-view');
+            
+            if (session) {
+                btnOpenLogin.classList.add('hidden-element');
+                btnLogout.classList.remove('hidden-element');
+                adminView.classList.remove('hidden-element');
+                publicView.classList.add('hidden-element');
+            } else {
+                btnOpenLogin.classList.remove('hidden-element');
+                btnLogout.classList.add('hidden-element');
+                adminView.classList.add('hidden-element');
+                publicView.classList.remove('hidden-element');
+            }
+        }
+
         function openLoginModal() {
-            const modal = document.getElementById('loginModal');
-            modal.classList.remove('hidden-element');
-            // Auto enfocar el email
+            document.getElementById('loginModal').classList.remove('hidden-element');
             setTimeout(() => document.getElementById('login_email').focus(), 100);
         }
 
@@ -381,115 +364,47 @@
             document.getElementById('loginForm').reset();
         }
 
-        function openProductModal(product) {
-            currentProduct = product;
-            currentSelectedSize = null;
-            
-            document.getElementById('modal-img').src = product.image_url;
-            document.getElementById('modal-brand').textContent = product.brand;
-            document.getElementById('modal-name').textContent = product.name;
-            document.getElementById('modal-price').textContent = `$${parseFloat(product.price).toFixed(2)}`;
-            
-            const sizesDiv = document.getElementById('modal-sizes');
-            sizesDiv.innerHTML = '';
-            
-            // Renderizar tallas (separadas por coma) dinámicamente
-            const sizes = product.sizes.split(',').map(s => s.trim()).filter(s => s);
-            sizes.forEach(size => {
-                const btn = document.createElement('button');
-                btn.className = "size-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white cursor-pointer select-none";
-                btn.textContent = size;
-                btn.onclick = () => selectSize(btn, size);
-                sizesDiv.appendChild(btn);
-            });
-
-            document.getElementById('productModal').classList.remove('hidden-element');
-        }
-
-        function closeProductModal() {
-            document.getElementById('productModal').classList.add('hidden-element');
-            currentProduct = null;
-        }
-
-        function selectSize(btnEl, size) {
-            currentSelectedSize = size;
-            // Resetear estilos de todos los botones
-            const buttons = document.querySelectorAll('#modal-sizes .size-btn');
-            buttons.forEach(b => b.classList.remove('active'));
-            // Activar el seleccionado
-            btnEl.classList.add('active');
-        }
-
-        // --- SISTEMA DE AUTENTICACIÓN (SECURE-END-TO-END) ---
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            const btnOpenLogin = document.getElementById('btnOpenLogin');
-            const btnLogout = document.getElementById('btnLogout');
-            
-            if (session) {
-                // Hay sesión: Ocultar botón login nav, mostrar botón salir, activar vista admin
-                btnOpenLogin.classList.add('hidden-element');
-                btnLogout.classList.remove('hidden-element');
-                toggleViews(true);
-            } else {
-                // No hay sesión: Mostrar botón login nav, ocultar botón salir, activar vista pública
-                btnOpenLogin.classList.remove('hidden-element');
-                btnLogout.classList.add('hidden-element');
-                toggleViews(false);
-            }
-        }
-
         async function handleLogin(e) {
             e.preventDefault();
-            const email = document.getElementById('login_email').value;
+            const email = document.getElementById('login_email').value.trim();
             const password = document.getElementById('login_password').value;
             const errorEl = document.getElementById('loginError');
+            const errorText = document.getElementById('loginErrorText');
             const btn = document.getElementById('btnLoginSubmit');
             
-            btn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:3px;border-top-color:#fff;"></div> Autenticando...';
+            errorEl.classList.add('hidden-element');
+            btn.innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:3px;border-top-color:#fff;"></div> Verificando...';
             btn.disabled = true;
 
-            // Envío encriptado por HTTPS a Supabase, NO hay contraseñas en el código
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
-            
-            if (error) {
-                errorEl.classList.remove('hidden-element');
-                btn.innerHTML = 'Ingresar al Sistema <i class="fa-solid fa-arrow-right"></i>';
-                btn.disabled = false;
-            } else {
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ 
+                    email: email, 
+                    password: password 
+                });
+                
+                if (error) throw error;
+
                 closeLoginModal();
-                await checkSession();
+                updateUIState(data.session);
+            } catch (err) {
+                console.error("Error al autenticar:", err);
+                errorText.textContent = err.message || "Credenciales incorrectas o usuario no registrado.";
+                errorEl.classList.remove('hidden-element');
+            } finally {
                 btn.innerHTML = 'Ingresar al Sistema <i class="fa-solid fa-arrow-right"></i>';
                 btn.disabled = false;
             }
         }
 
         async function logout() {
-            if(!confirm("¿Seguro que deseas salir del panel de administrador?")) return;
-            await supabase.auth.signOut();
-            await checkSession();
+            if(!confirm("¿Deseas cerrar sesión del panel de administrador?")) return;
+            await supabaseClient.auth.signOut();
         }
 
-        function toggleViews(isAdmin) {
-            const adminView = document.getElementById('admin-view');
-            const publicView = document.getElementById('public-view');
-            
-            if (isAdmin) {
-                adminView.classList.remove('hidden-element');
-                publicView.classList.add('hidden-element');
-            } else {
-                adminView.classList.add('hidden-element');
-                publicView.classList.remove('hidden-element');
-            }
-        }
-
-        // --- SISTEMA DE INVENTARIO Y BÚSQUEDA ---
         async function fetchProducts() {
             document.getElementById('loader').classList.remove('hidden-element');
-            document.getElementById('products-grid').innerHTML = '';
-            document.getElementById('empty-state').classList.add('hidden-element');
-
-            const { data, error } = await supabase
+            
+            const { data, error } = await supabaseClient
                 .from('products')
                 .select('*')
                 .order('created_at', { ascending: false });
@@ -497,7 +412,7 @@
             document.getElementById('loader').classList.add('hidden-element');
             
             if (error) {
-                console.error('Error fetching data:', error);
+                console.error('Error al obtener productos:', error);
                 return;
             }
             
@@ -508,13 +423,13 @@
 
         function filterProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            document.getElementById('searchInputMobile').value = query; // Sincronizar inputs
+            document.getElementById('searchInputMobile').value = query;
             ejecutarFiltro(query);
         }
 
         function filterProductsMobile() {
             const query = document.getElementById('searchInputMobile').value.toLowerCase();
-            document.getElementById('searchInput').value = query; // Sincronizar inputs
+            document.getElementById('searchInput').value = query;
             ejecutarFiltro(query);
         }
 
@@ -525,7 +440,6 @@
             renderProducts(filtered);
         }
 
-        // --- RENDERIZADO DOM ---
         function renderProducts(items) {
             const grid = document.getElementById('products-grid');
             const empty = document.getElementById('empty-state');
@@ -546,7 +460,6 @@
                 card.innerHTML = `
                     <div class="h-48 md:h-64 bg-gray-100 flex items-center justify-center relative overflow-hidden">
                         <img src="${img}" alt="${p.name}" class="w-full h-full object-cover">
-                        <div class="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition duration-300"></div>
                         <div class="absolute top-4 right-4 bg-white/90 backdrop-blur text-black text-xs font-black px-3 py-1 rounded-full shadow">
                             $${parseFloat(p.price).toFixed(2)}
                         </div>
@@ -600,12 +513,46 @@
             });
         }
 
-        // --- INTEGRACIÓN WHATSAPP CHECKOUT ---
+        function openProductModal(product) {
+            currentProduct = product;
+            currentSelectedSize = null;
+            
+            document.getElementById('modal-img').src = product.image_url;
+            document.getElementById('modal-brand').textContent = product.brand;
+            document.getElementById('modal-name').textContent = product.name;
+            document.getElementById('modal-price').textContent = `$${parseFloat(product.price).toFixed(2)}`;
+            
+            const sizesDiv = document.getElementById('modal-sizes');
+            sizesDiv.innerHTML = '';
+            
+            const sizes = product.sizes.split(',').map(s => s.trim()).filter(s => s);
+            sizes.forEach(size => {
+                const btn = document.createElement('button');
+                btn.className = "size-btn px-5 py-2.5 rounded-xl text-sm font-bold bg-white cursor-pointer select-none";
+                btn.textContent = size;
+                btn.onclick = () => selectSize(btn, size);
+                sizesDiv.appendChild(btn);
+            });
+
+            document.getElementById('productModal').classList.remove('hidden-element');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden-element');
+            currentProduct = null;
+        }
+
+        function selectSize(btnEl, size) {
+            currentSelectedSize = size;
+            const buttons = document.querySelectorAll('#modal-sizes .size-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+        }
+
         function redirectToWhatsApp() {
             if (!currentProduct) return;
             if (!currentSelectedSize) return alert('⚠️ Por favor, selecciona una talla antes de solicitar la cotización.');
 
-            // Mensaje preformateado profesional para el vendedor
             const msg = `*🛍️ NUEVA SOLICITUD DE COMPRA*\n\n` +
                         `Hola URBANSTORE, me interesa adquirir este producto:\n\n` +
                         `🔹 *Marca:* ${currentProduct.brand}\n` +
@@ -619,12 +566,10 @@
             window.open(url, '_blank');
         }
 
-        // --- LÓGICA CRUD ADMINISTRADOR (STORAGE Y BASE DE DATOS) ---
         async function handleProductSubmit(e) {
             e.preventDefault();
             const btnSubmit = document.getElementById('btnSubmitProduct');
             
-            // Estado de carga visual
             const originalBtnHtml = btnSubmit.innerHTML;
             btnSubmit.innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:3px;border-top-color:#fff;"></div> Procesando...';
             btnSubmit.disabled = true;
@@ -639,36 +584,31 @@
             let image_url = "";
 
             try {
-                // 1. Proceso de subida de imagen al CDN Storage público ('productos')
                 if (imageFile) {
                     const ext = imageFile.name.split('.').pop();
                     const path = `uploads/urban_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
 
-                    const { error: uploadError } = await supabase.storage.from('productos').upload(path, imageFile);
+                    const { error: uploadError } = await supabaseClient.storage.from('productos').upload(path, imageFile);
                     if (uploadError) throw uploadError;
 
-                    const { data: { publicUrl } } = supabase.storage.from('productos').getPublicUrl(path);
+                    const { data: { publicUrl } } = supabaseClient.storage.from('productos').getPublicUrl(path);
                     image_url = publicUrl;
                 } else if (!id) {
                     throw new Error("Es obligatorio seleccionar una foto para un producto nuevo.");
                 }
 
-                // 2. Preparar datos para base de datos
                 const productData = { brand, name, price, sizes };
-                if (image_url) productData.image_url = image_url; // Solo actualiza URL si se subió nueva foto
+                if (image_url) productData.image_url = image_url;
 
-                // 3. Ejecutar Insertar o Actualizar
                 if (id) {
-                    const { error } = await supabase.from('products').update(productData).eq('id', id);
+                    const { error } = await supabaseClient.from('products').update(productData).eq('id', id);
                     if (error) throw error;
                     alert('✅ Producto actualizado correctamente.');
                 } else {
-                    const { error } = await supabase.from('products').insert([productData]);
+                    const { error } = await supabaseClient.from('products').insert([productData]);
                     if (error) throw error;
-                    // Notificación silente, la tabla se recarga sola
                 }
 
-                // Limpiar formulario y estado visual
                 document.getElementById('productForm').reset();
                 document.getElementById('editProductId').value = '';
                 document.getElementById('file-name-display').textContent = "Toca para subir o tomar foto";
@@ -684,16 +624,10 @@
         }
 
         async function deleteProduct(id) {
-            if(!confirm("⚠️ ATENCIÓN\n\n¿Estás seguro de eliminar este producto?\nDesaparecerá de la tienda global inmediatamente y no se puede deshacer.")) return;
-            
-            // Ejecutar borrado en Supabase
-            const { error } = await supabase.from('products').delete().eq('id', id);
-            
-            if (error) {
-                alert("Error al eliminar el registro: " + error.message);
-            } else {
-                fetchProducts();
-            }
+            if(!confirm("¿Estás seguro de eliminar este producto?")) return;
+            const { error } = await supabaseClient.from('products').delete().eq('id', id);
+            if (error) alert("Error al eliminar: " + error.message);
+            else fetchProducts();
         }
     </script>
 </body>
