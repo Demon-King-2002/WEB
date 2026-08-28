@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,15 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Urban Boutique - Catálogo Exclusivo</title>
 
-  <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Supabase JS CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* Forzar la eliminación del botón flotante de Netlify y cualquier marca de agua */
     div[class*="netlify"], #netlify-badge, [id*="netlify"], [class*="netlify-badge"], iframe[src*="netlify"],
     body > div:last-child:not(.modal-overlay):not(.toast),
     a[href*="netlify"], div[style*="z-index: 99999"], div[style*="position: fixed"][style*="bottom"] { 
@@ -26,11 +24,11 @@
     }
 
     :root {
-      --primary: #FF1493;       /* Magenta Vibrante */
+      --primary: #FF1493;
       --primary-hover: #E0007A;
-      --secondary: #7B2CBF;     /* Violeta Eléctrico */
-      --accent: #FF5E7E;        /* Coral Vivo */
-      --gold: #FFD700;          /* Dorado Elegante */
+      --secondary: #7B2CBF;
+      --accent: #FF5E7E;
+      --gold: #FFD700;
       --bg-gradient: linear-gradient(135deg, #FFF0F6 0%, #F3E8FF 50%, #FFE5EC 100%);
       --card-bg: rgba(255, 255, 255, 0.85);
       --glass-border: rgba(255, 255, 255, 0.6);
@@ -57,7 +55,6 @@
       overflow-x: hidden;
     }
 
-    /* Esferas de brillo decorativas */
     .glow-sphere-1 {
       position: fixed;
       top: -100px;
@@ -85,7 +82,6 @@
       100% { transform: translate(30px, 40px) scale(1.1); }
     }
 
-    /* Encabezado */
     header {
       background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(16px);
@@ -210,7 +206,6 @@
       color: white;
     }
 
-    /* Botón de acceso exclusivo con solo ícono */
     .btn-login-icon {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
@@ -234,14 +229,12 @@
       box-shadow: var(--shadow-hover);
     }
 
-    /* Main Container */
     .main-wrapper {
       max-width: 1300px;
       margin: 30px auto;
       padding: 0 24px;
     }
 
-    /* Hero Banner más llamativo */
     .hero-banner {
       background: linear-gradient(135deg, rgba(255,20,147,0.85), rgba(123,44,191,0.9)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80');
       background-blend-mode: overlay;
@@ -299,7 +292,6 @@
       color: var(--primary-hover);
     }
 
-    /* Filtros */
     .filters-section {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
@@ -422,7 +414,6 @@
       color: var(--text-muted);
     }
 
-    /* Cards de Productos */
     .products-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -582,7 +573,6 @@
     .btn-delete { background: #FFE6E6; color: #FF3B3B; }
     .btn-delete:hover { background: #FF3B3B; color: white; }
 
-    /* Modales Estilizados */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -760,7 +750,6 @@
     }
 
     .toast i {
-      color: #00FF9D;
       font-size: 18px;
     }
   </style>
@@ -770,7 +759,6 @@
   <div class="glow-sphere-1"></div>
   <div class="glow-sphere-2"></div>
 
-  <!-- Header -->
   <header>
     <div class="nav-container">
       <a href="#" class="logo-brand">
@@ -791,7 +779,6 @@
     </div>
   </header>
 
-  <!-- Main Body -->
   <main class="main-wrapper">
     <div class="hero-banner">
       <div class="hero-content">
@@ -803,7 +790,6 @@
       </button>
     </div>
 
-    <!-- Filters -->
     <div class="filters-section">
       <div class="category-tabs">
         <button class="tab-btn active" data-category="todos" type="button">
@@ -837,11 +823,9 @@
       </div>
     </div>
 
-    <!-- Product Grid -->
     <div class="products-grid" id="productsGrid"></div>
   </main>
 
-  <!-- Modal: Agregar / Editar Producto -->
   <div class="modal-overlay" id="productModal">
     <div class="modal-card">
       <div class="modal-header">
@@ -910,7 +894,6 @@
     </div>
   </div>
 
-  <!-- Modal: Login Exclusivo para la Propietaria -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-card">
       <div class="modal-header">
@@ -939,86 +922,30 @@
     </div>
   </div>
 
-  <!-- Toast Notification -->
   <div class="toast" id="toastMsg">
-    <i class="fa-solid fa-circle-check"></i>
+    <i class="fa-solid fa-circle-check" style="color: #00FF9D;"></i>
     <span id="toastText">Operación realizada con éxito</span>
   </div>
 
   <script>
-    /* VARIABLES DE ESTADO Y SUPABASE */
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     let supabase = null;
+    let currentUser = null;
 
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function') {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
-    } catch (e) {
-      console.warn('Modo local activo:', e);
-    }
+    } catch (e) {}
 
-    let productsList = [
-      {
-        id: '1',
-        nombre: 'Tacón Stiletto Velvet Rose',
-        categoria: 'zapatos',
-        genero: 'dama',
-        precio: 345.00,
-        stock: 12,
-        tallas: ['35', '36', '37', '38'],
-        imagen_url: 'https://images.unsplash.com/photo-1543163521-1bf539c55dd2?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: '2',
-        nombre: 'Mocasines Elegantes de Cuero',
-        categoria: 'zapatos',
-        genero: 'caballero',
-        precio: 450.00,
-        stock: 8,
-        tallas: ['39', '40', '41', '42'],
-        imagen_url: 'https://images.unsplash.com/photo-1614252235316-8c857d38b5f4?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: '3',
-        nombre: 'Playera Casual Cotton Chic',
-        categoria: 'playeras_camisas',
-        genero: 'dama',
-        precio: 125.00,
-        stock: 20,
-        tallas: ['S', 'M', 'L'],
-        imagen_url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: '4',
-        nombre: 'Bolso de Mano Elegante Coral',
-        categoria: 'accesorios_bolsas',
-        genero: 'dama',
-        precio: 295.00,
-        stock: 5,
-        tallas: ['Única'],
-        imagen_url: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?auto=format&fit=crop&w=600&q=80'
-      },
-      {
-        id: '5',
-        nombre: 'Pantalón Jeans High Waist',
-        categoria: 'pantalones',
-        genero: 'dama',
-        precio: 220.00,
-        stock: 15,
-        tallas: ['28', '30', '32'],
-        imagen_url: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=600&q=80'
-      }
-    ];
-
+    let productsList = [];
     let currentCategory = 'todos';
     let currentGender = 'todos';
-    let currentUser = null;
 
-    /* INICIALIZACIÓN CON EVENT LISTENERS ROBUSTOS Y DELEGACIÓN GLOBAL */
     document.addEventListener('DOMContentLoaded', () => {
-      // Delegación de eventos global para asegurar que los clics en el botón de login nunca fallen aunque se reemplace el HTML
+      checkSession();
+      
       document.body.addEventListener('click', (e) => {
         const loginTrigger = e.target.closest('#btnLoginTrigger');
         if (loginTrigger) {
@@ -1035,7 +962,6 @@
         }
       });
 
-      // 2. Cerrar modales por botones dedicados
       document.querySelectorAll('.btn-close-login-modal').forEach(btn => {
         btn.addEventListener('click', closeLoginModal);
       });
@@ -1043,7 +969,6 @@
         btn.addEventListener('click', closeProductModal);
       });
 
-      // 3. Cerrar al hacer clic fuera del contenido del modal (overlay)
       const loginModalEl = document.getElementById('loginModal');
       if (loginModalEl) {
         loginModalEl.addEventListener('click', (e) => {
@@ -1058,13 +983,11 @@
         });
       }
 
-      // 4. Botón de agregar producto nuevo
       const btnAddProduct = document.getElementById('btnAddProduct');
       if (btnAddProduct) {
         btnAddProduct.addEventListener('click', () => openProductModal());
       }
 
-      // 5. Pestañas de categoría
       document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1074,7 +997,6 @@
         });
       });
 
-      // 6. Botones de género
       document.querySelectorAll('.gender-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
           document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
@@ -1084,13 +1006,11 @@
         });
       });
 
-      // 7. Buscador
       const searchInput = document.getElementById('searchInput');
       if (searchInput) {
         searchInput.addEventListener('input', () => renderProducts());
       }
 
-      // 8. Formularios
       const loginForm = document.getElementById('loginForm');
       if (loginForm) {
         loginForm.addEventListener('submit', handleLogin);
@@ -1101,7 +1021,6 @@
         productForm.addEventListener('submit', saveProduct);
       }
 
-      // Limpieza periódica de elementos inyectados por Netlify (por si acaso)
       setInterval(() => {
         document.querySelectorAll('body > div').forEach(el => {
           if (el.id !== 'productModal' && el.id !== 'loginModal' && el.id !== 'toastMsg' && !el.classList.contains('glow-sphere-1') && !el.classList.contains('glow-sphere-2') && el.tagName !== 'HEADER' && el.tagName !== 'MAIN' && el.tagName !== 'SCRIPT') {
@@ -1112,11 +1031,19 @@
         });
       }, 1000);
 
-      // Cargar productos iniciales
       loadProductsFromSupabase();
     });
 
-    /* FUNCIONES DE MODALES */
+    async function checkSession() {
+      if (supabase) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          currentUser = session.user;
+          updateUIAfterLogin(currentUser.email);
+        }
+      }
+    }
+
     function openLoginModal() {
       const modal = document.getElementById('loginModal');
       if (modal) {
@@ -1166,22 +1093,24 @@
       }
     }
 
-    /* CARGA Y RENDERIZADO DE PRODUCTOS */
     async function loadProductsFromSupabase() {
       if (supabase) {
         try {
           const { data, error } = await supabase.from('productos').select('*');
-          if (!error && data && data.length > 0) {
+          if (!error && data) {
             productsList = data.map(item => ({
               ...item,
               tallas: typeof item.tallas === 'string' ? item.tallas.split(',').map(s => s.trim()) : item.tallas
             }));
           }
-        } catch (e) {
-          console.warn('Usando catálogo por defecto local');
-        }
+        } catch (e) {}
       }
       renderProducts();
+    }
+
+    function formatNumber(num) {
+      let val = Number(num);
+      return (val % 1 === 0) ? val.toString() : val.toFixed(1);
     }
 
     function renderProducts() {
@@ -1206,7 +1135,6 @@
           <div class="empty-state">
             <i class="fa-solid fa-box-open"></i>
             <h3>No se encontraron productos</h3>
-            <p style="color: var(--text-muted); font-size: 14px;">Intenta cambiar los filtros o agrega un producto a esta sección.</p>
           </div>
         `;
         return;
@@ -1235,7 +1163,7 @@
               </div>
 
               <div class="card-footer">
-                <div class="price-tag"><span>Q</span>${parseFloat(p.precio).toFixed(2)}</div>
+                <div class="price-tag"><span>Q</span>${formatNumber(p.precio)}</div>
                 <div class="card-actions" style="display: ${currentUser ? 'flex' : 'none'};">
                   <button class="btn-icon btn-edit" onclick="editProduct('${p.id}')" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -1251,7 +1179,6 @@
       }).join('');
     }
 
-    /* OPERACIONES CRUD DE PRODUCTOS */
     async function saveProduct(e) {
       e.preventDefault();
       
@@ -1274,7 +1201,7 @@
         if (supabase) {
           try { await supabase.from('productos').update(productPayload).eq('id', id); } catch(err){}
         }
-        showToast('Producto actualizado correctamente');
+        showToast('Producto actualizado correctamente', false);
       } else {
         const newId = Date.now().toString();
         const newProd = { id: newId, ...productPayload };
@@ -1283,7 +1210,7 @@
         if (supabase) {
           try { await supabase.from('productos').insert([productPayload]); } catch(err){}
         }
-        showToast('Producto registrado exitosamente');
+        showToast('Producto registrado exitosamente', false);
       }
 
       closeProductModal();
@@ -1301,18 +1228,39 @@
         if (supabase) {
           try { await supabase.from('productos').delete().eq('id', id); } catch(err){}
         }
-        showToast('Producto eliminado del sistema');
+        showToast('Producto eliminado del sistema', false);
         renderProducts();
       }
     };
 
-    /* LOGIN Y GESTIÓN DE USUARIO */
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
 
-      currentUser = { email, name: 'Propietaria' };
+      if (supabase) {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
 
+        if (error) {
+          showToast('Error: ' + error.message, true);
+          return;
+        }
+        currentUser = data.user;
+        updateUIAfterLogin(email);
+        closeLoginModal();
+        showToast('¡Sesión iniciada con éxito!', false);
+      } else {
+        currentUser = { email, name: 'Propietaria' };
+        updateUIAfterLogin(email);
+        closeLoginModal();
+        showToast('¡Sesión local iniciada!', false);
+      }
+    }
+
+    function updateUIAfterLogin(email) {
       document.getElementById('userBadgeArea').innerHTML = `
         <div class="user-badge">
           <div class="user-avatar">P</div>
@@ -1327,16 +1275,15 @@
           </div>
         </div>
       `;
-
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'flex';
-
-      closeLoginModal();
       renderProducts();
-      showToast('¡Sesión iniciada con éxito para gestión!');
     }
 
-    function logoutUser() {
+    async function logoutUser() {
+      if (supabase) {
+        await supabase.auth.signOut();
+      }
       currentUser = null;
       document.getElementById('userBadgeArea').innerHTML = `
         <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
@@ -1348,14 +1295,22 @@
       if (btnAdd) btnAdd.style.display = 'none';
 
       renderProducts();
-      showToast('Sesión cerrada correctamente');
+      showToast('Sesión cerrada correctamente', false);
     }
 
-    function showToast(msg) {
+    function showToast(msg, isError = false) {
       const toast = document.getElementById('toastMsg');
       const toastText = document.getElementById('toastText');
-      if (toast && toastText) {
+      const icon = toast.querySelector('i');
+      if (toast && toastText && icon) {
         toastText.innerText = msg;
+        if(isError) {
+          icon.className = 'fa-solid fa-circle-exclamation';
+          icon.style.color = '#FF3B3B';
+        } else {
+          icon.className = 'fa-solid fa-circle-check';
+          icon.style.color = '#00FF9D';
+        }
         toast.classList.add('active');
         setTimeout(() => toast.classList.remove('active'), 3500);
       }
