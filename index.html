@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Urban Boutique - Catálogo</title>
+  <title>Urban Boutique - Catálogo Exclusivo</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -208,24 +208,25 @@
       color: white;
     }
 
-    .btn-login-trigger {
+    /* Botón de acceso exclusivo con solo ícono */
+    .btn-login-icon {
       background: linear-gradient(135deg, var(--primary), var(--secondary));
       color: white;
       border: none;
-      padding: 10px 22px;
-      border-radius: 30px;
-      font-weight: 700;
-      font-size: 13px;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
       cursor: pointer;
       box-shadow: var(--shadow-vivid);
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      font-size: 18px;
     }
 
-    .btn-login-trigger:hover {
-      transform: translateY(-2px);
+    .btn-login-icon:hover {
+      transform: scale(1.1) rotate(15deg);
       box-shadow: var(--shadow-hover);
     }
 
@@ -236,14 +237,14 @@
       padding: 0 24px;
     }
 
-    /* Hero Banner */
+    /* Hero Banner más llamativo */
     .hero-banner {
       background: linear-gradient(135deg, rgba(255,20,147,0.85), rgba(123,44,191,0.9)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80');
       background-blend-mode: overlay;
       background-size: cover;
       background-position: center;
       border-radius: var(--radius);
-      padding: 35px 40px;
+      padding: 40px 45px;
       color: white;
       display: flex;
       justify-content: space-between;
@@ -252,19 +253,23 @@
       margin-bottom: 30px;
       position: relative;
       overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.3);
     }
 
     .hero-content h2 {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 800;
-      margin-bottom: 8px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+      margin-bottom: 10px;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      letter-spacing: -0.5px;
     }
 
     .hero-content p {
-      font-size: 15px;
+      font-size: 16px;
       opacity: 0.95;
-      max-width: 550px;
+      max-width: 600px;
+      font-weight: 500;
+      line-height: 1.5;
     }
 
     .btn-add-product {
@@ -573,7 +578,7 @@
     .btn-delete { background: #FFE6E6; color: #FF3B3B; }
     .btn-delete:hover { background: #FF3B3B; color: white; }
 
-    /* Estructura Modal Asegurada */
+    /* Modales Estilizados */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -770,12 +775,13 @@
         </div>
         <div class="logo-text">
           <h1>Urban Boutique</h1>
+          <span>Catálogo Exclusivo</span>
         </div>
       </a>
 
       <div id="userBadgeArea">
-        <button id="btnLoginTrigger" class="btn-login-trigger" type="button" onclick="openLoginModal()">
-          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión Propietaria
+        <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
+          <i class="fa-solid fa-user-gear"></i>
         </button>
       </div>
     </div>
@@ -785,10 +791,10 @@
   <main class="main-wrapper">
     <div class="hero-banner">
       <div class="hero-content">
-        <h2>Catálogo</h2>
-        <p>Administración general de Calzado, Playeras, Pantalones y Accesorios de Dama y Caballero.</p>
+        <h2>✨ Tendencias y Estilo Urbano ✨</h2>
+        <p>Explora nuestra colección curada de calzado, prendas de alta calidad y accesorios vanguardistas para dama y caballero.</p>
       </div>
-      <button id="btnAddProduct" class="btn-add-product" onclick="openProductModal()">
+      <button id="btnAddProduct" class="btn-add-product" type="button">
         <i class="fa-solid fa-plus-circle"></i> Nuevo Producto
       </button>
     </div>
@@ -796,33 +802,33 @@
     <!-- Filters -->
     <div class="filters-section">
       <div class="category-tabs">
-        <button class="tab-btn active" onclick="filterCategory('todos', this)">
+        <button class="tab-btn active" data-category="todos" type="button">
           <i class="fa-solid fa-border-all"></i> Todos los Productos
         </button>
-        <button class="tab-btn" onclick="filterCategory('zapatos', this)">
+        <button class="tab-btn" data-category="zapatos" type="button">
           <i class="fa-solid fa-shoe-prints"></i> Zapatos
         </button>
-        <button class="tab-btn" onclick="filterCategory('playeras_camisas', this)">
+        <button class="tab-btn" data-category="playeras_camisas" type="button">
           <i class="fa-solid fa-shirt"></i> Playeras y Camisas
         </button>
-        <button class="tab-btn" onclick="filterCategory('pantalones', this)">
+        <button class="tab-btn" data-category="pantalones" type="button">
           <i class="fa-solid fa-scissors"></i> Pantalones
         </button>
-        <button class="tab-btn" onclick="filterCategory('accesorios_bolsas', this)">
+        <button class="tab-btn" data-category="accesorios_bolsas" type="button">
           <i class="fa-solid fa-bag-shopping"></i> Accesorios & Bolsas
         </button>
       </div>
 
       <div class="subfilters-bar">
         <div class="gender-toggle">
-          <button class="gender-btn active" onclick="filterGender('todos', this)">Todos</button>
-          <button class="gender-btn" onclick="filterGender('dama', this)">👩 Dama</button>
-          <button class="gender-btn" onclick="filterGender('caballero', this)">👨 Caballero</button>
+          <button class="gender-btn active" data-gender="todos" type="button">Todos</button>
+          <button class="gender-btn" data-gender="dama" type="button">👩 Dama</button>
+          <button class="gender-btn" data-gender="caballero" type="button">👨 Caballero</button>
         </div>
 
         <div class="search-box">
           <i class="fa-solid fa-magnifying-glass"></i>
-          <input type="text" id="searchInput" placeholder="Buscar por nombre, código o talla..." oninput="handleSearch()">
+          <input type="text" id="searchInput" placeholder="Buscar por nombre, código o talla...">
         </div>
       </div>
     </div>
@@ -832,17 +838,17 @@
   </main>
 
   <!-- Modal: Agregar / Editar Producto -->
-  <div class="modal-overlay" id="productModal" onclick="handleOverlayClick(event, 'productModal')">
+  <div class="modal-overlay" id="productModal">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title" id="modalProductTitle">
           <i class="fa-solid fa-box-open" style="color: var(--primary);"></i>
           <span>Ingresar Producto</span>
         </div>
-        <button class="btn-close-modal" type="button" onclick="closeProductModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close-modal btn-close-prod-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="productForm" onsubmit="saveProduct(event)">
+      <form id="productForm">
         <input type="hidden" id="prodId">
 
         <div class="form-group">
@@ -901,17 +907,17 @@
   </div>
 
   <!-- Modal: Login Exclusivo para la Propietaria -->
-  <div class="modal-overlay" id="loginModal" onclick="handleOverlayClick(event, 'loginModal')">
+  <div class="modal-overlay" id="loginModal">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
           <i class="fa-solid fa-user-shield" style="color: var(--secondary);"></i>
           <span>Acceso Propietaria</span>
         </div>
-        <button class="btn-close-modal" type="button" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close-modal btn-close-login-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="loginForm" onsubmit="handleLogin(event)">
+      <form id="loginForm">
         <div class="form-group">
           <label for="loginEmail">Correo Electrónico</label>
           <input type="email" class="form-control" id="loginEmail" placeholder="propietaria@urbanboutique.com" required>
@@ -936,71 +942,7 @@
   </div>
 
   <script>
-    /* 1. FUNCIONES GLOBALES DE CONTROL DE MODALES AL INICIO DEL SCRIPT */
-    function openLoginModal() {
-      const modal = document.getElementById('loginModal');
-      if (modal) {
-        modal.style.display = 'flex';
-        setTimeout(() => modal.classList.add('active'), 10);
-      }
-    }
-
-    function closeLoginModal() {
-      const modal = document.getElementById('loginModal');
-      if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => modal.style.display = 'none', 200);
-      }
-    }
-
-    function openProductModal(prod = null) {
-      const modal = document.getElementById('productModal');
-      const form = document.getElementById('productForm');
-      if (!modal) return;
-      
-      if (prod) {
-        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>Editar Producto</span>`;
-        document.getElementById('prodId').value = prod.id;
-        document.getElementById('prodName').value = prod.nombre;
-        document.getElementById('prodCategory').value = prod.categoria;
-        document.getElementById('prodGender').value = prod.genero;
-        document.getElementById('prodPrice').value = prod.precio;
-        document.getElementById('prodStock').value = prod.stock;
-        document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
-        document.getElementById('prodImg').value = prod.imagen_url || '';
-      } else {
-        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> <span>Ingresar Producto</span>`;
-        if (form) form.reset();
-        document.getElementById('prodId').value = '';
-      }
-
-      modal.style.display = 'flex';
-      setTimeout(() => modal.classList.add('active'), 10);
-    }
-
-    function closeProductModal() {
-      const modal = document.getElementById('productModal');
-      if (modal) {
-        modal.classList.remove('active');
-        setTimeout(() => modal.style.display = 'none', 200);
-      }
-    }
-
-    function handleOverlayClick(event, modalId) {
-      if (event.target.id === modalId) {
-        if (modalId === 'loginModal') closeLoginModal();
-        if (modalId === 'productModal') closeProductModal();
-      }
-    }
-
-    // Exposición global
-    window.openLoginModal = openLoginModal;
-    window.closeLoginModal = closeLoginModal;
-    window.openProductModal = openProductModal;
-    window.closeProductModal = closeProductModal;
-    window.handleOverlayClick = handleOverlayClick;
-
-    /* 2. INICIALIZACIÓN Y VARIABLES DE ESTADO */
+    /* VARIABLES DE ESTADO Y SUPABASE */
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     let supabase = null;
@@ -1070,15 +1012,131 @@
     let currentGender = 'todos';
     let currentUser = null;
 
+    /* INICIALIZACIÓN CON EVENT LISTENERS ROBUSTOS (EVITA PROBLEMAS DE CLICKS) */
     document.addEventListener('DOMContentLoaded', () => {
-      // Garantizar evento click en el botón de login
-      const loginBtn = document.getElementById('btnLoginTrigger');
-      if (loginBtn) {
-        loginBtn.addEventListener('click', openLoginModal);
+      // 1. Abrir modal login con el botón de ícono
+      const btnLoginTrigger = document.getElementById('btnLoginTrigger');
+      if (btnLoginTrigger) {
+        btnLoginTrigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          openLoginModal();
+        });
       }
+
+      // 2. Cerrar modales
+      document.querySelectorAll('.btn-close-login-modal').forEach(btn => {
+        btn.addEventListener('click', closeLoginModal);
+      });
+      document.querySelectorAll('.btn-close-prod-modal').forEach(btn => {
+        btn.addEventListener('click', closeProductModal);
+      });
+
+      // 3. Cerrar al hacer clic fuera del contenido del modal (overlay)
+      document.getElementById('loginModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('loginModal')) closeLoginModal();
+      });
+      document.getElementById('productModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('productModal')) closeProductModal();
+      });
+
+      // 4. Botón de agregar producto nuevo
+      const btnAddProduct = document.getElementById('btnAddProduct');
+      if (btnAddProduct) {
+        btnAddProduct.addEventListener('click', () => openProductModal());
+      }
+
+      // 5. Pestañas de categoría
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentCategory = btn.getAttribute('data-category');
+          renderProducts();
+        });
+      });
+
+      // 6. Botones de género
+      document.querySelectorAll('.gender-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentGender = btn.getAttribute('data-gender');
+          renderProducts();
+        });
+      });
+
+      // 7. Buscador
+      const searchInput = document.getElementById('searchInput');
+      if (searchInput) {
+        searchInput.addEventListener('input', () => renderProducts());
+      }
+
+      // 8. Formularios
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+      }
+
+      const productForm = document.getElementById('productForm');
+      if (productForm) {
+        productForm.addEventListener('submit', saveProduct);
+      }
+
+      // Cargar productos iniciales
       loadProductsFromSupabase();
     });
 
+    /* FUNCIONES DE MODALES */
+    function openLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+      }
+    }
+
+    function closeLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    function openProductModal(prod = null) {
+      const modal = document.getElementById('productModal');
+      const form = document.getElementById('productForm');
+      if (!modal) return;
+      
+      if (prod) {
+        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>Editar Producto</span>`;
+        document.getElementById('prodId').value = prod.id;
+        document.getElementById('prodName').value = prod.nombre;
+        document.getElementById('prodCategory').value = prod.categoria;
+        document.getElementById('prodGender').value = prod.genero;
+        document.getElementById('prodPrice').value = prod.precio;
+        document.getElementById('prodStock').value = prod.stock;
+        document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
+        document.getElementById('prodImg').value = prod.imagen_url || '';
+      } else {
+        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> <span>Ingresar Producto</span>`;
+        if (form) form.reset();
+        document.getElementById('prodId').value = '';
+      }
+
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeProductModal() {
+      const modal = document.getElementById('productModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    /* CARGA Y RENDERIZADO DE PRODUCTOS */
     async function loadProductsFromSupabase() {
       if (supabase) {
         try {
@@ -1090,7 +1148,7 @@
             }));
           }
         } catch (e) {
-          console.warn('Usando catálogo por defecto');
+          console.warn('Usando catálogo por defecto local');
         }
       }
       renderProducts();
@@ -1163,24 +1221,7 @@
       }).join('');
     }
 
-    function filterCategory(cat, btn) {
-      currentCategory = cat;
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderProducts();
-    }
-
-    function filterGender(gender, btn) {
-      currentGender = gender;
-      document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      renderProducts();
-    }
-
-    function handleSearch() {
-      renderProducts();
-    }
-
+    /* OPERACIONES CRUD DE PRODUCTOS */
     async function saveProduct(e) {
       e.preventDefault();
       
@@ -1219,12 +1260,12 @@
       renderProducts();
     }
 
-    function editProduct(id) {
+    window.editProduct = function(id) {
       const prod = productsList.find(p => p.id === id);
       if (prod) openProductModal(prod);
-    }
+    };
 
-    async function deleteProduct(id) {
+    window.deleteProduct = async function(id) {
       if (confirm('¿Estás segura de eliminar este producto del inventario?')) {
         productsList = productsList.filter(p => p.id !== id);
         if (supabase) {
@@ -1233,9 +1274,10 @@
         showToast('Producto eliminado del sistema');
         renderProducts();
       }
-    }
+    };
 
-    window.handleLogin = function(e) {
+    /* LOGIN Y GESTIÓN DE USUARIO */
+    function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('loginEmail').value;
 
@@ -1249,12 +1291,15 @@
             <span><i class="fa-solid fa-circle-check" style="color: #00FF9D;"></i> Modo Gestión</span>
           </div>
           <div class="user-actions">
-            <button class="btn-user-action" onclick="logoutUser()" title="Cerrar Sesión">
+            <button class="btn-user-action" id="btnLogout" title="Cerrar Sesión">
               <i class="fa-solid fa-power-off"></i>
             </button>
           </div>
         </div>
       `;
+
+      // Vincular logout
+      document.getElementById('btnLogout').addEventListener('click', logoutUser);
 
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'flex';
@@ -1262,25 +1307,31 @@
       closeLoginModal();
       renderProducts();
       showToast('¡Sesión iniciada con éxito para gestión!');
-    };
+    }
 
-    window.logoutUser = function() {
+    function logoutUser() {
       currentUser = null;
       document.getElementById('userBadgeArea').innerHTML = `
-        <button id="btnLoginTrigger" class="btn-login-trigger" type="button" onclick="openLoginModal()">
-          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión Propietaria
+        <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
+          <i class="fa-solid fa-user-gear"></i>
         </button>
       `;
 
+      // Reasignar evento al botón de icono de login restaurado
       const newLoginBtn = document.getElementById('btnLoginTrigger');
-      if (newLoginBtn) newLoginBtn.addEventListener('click', openLoginModal);
+      if (newLoginBtn) {
+        newLoginBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          openLoginModal();
+        });
+      }
 
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'none';
 
       renderProducts();
       showToast('Sesión cerrada correctamente');
-    };
+    }
 
     function showToast(msg) {
       const toast = document.getElementById('toastMsg');
