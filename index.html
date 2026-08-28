@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chic Fashion Boutique - Panel de Administración</title>
+  <title>Urban Boutique - Catálogo</title>
 
   <!-- Google Fonts & Font Awesome Icons -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -13,6 +13,16 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* Forzar la eliminación del botón flotante de Netlify */
+    div[class*="netlify"], #netlify-badge, [id*="netlify"], [class*="netlify-badge"], iframe[src*="netlify"] { 
+      display: none !important; 
+      pointer-events: none !important; 
+      visibility: hidden !important; 
+      opacity: 0 !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+
     :root {
       --primary: #FF1493;       /* Magenta Vibrante */
       --primary-hover: #E0007A;
@@ -759,14 +769,13 @@
           <i class="fa-solid fa-bag-shopping"></i>
         </div>
         <div class="logo-text">
-          <h1>Chic Boutique</h1>
-          <span>Panel de Control GT</span>
+          <h1>Urban Boutique</h1>
         </div>
       </a>
 
       <div id="userBadgeArea">
         <button id="btnLoginTrigger" class="btn-login-trigger" type="button" onclick="openLoginModal()">
-          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión / Área
+          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión Propietaria
         </button>
       </div>
     </div>
@@ -776,7 +785,7 @@
   <main class="main-wrapper">
     <div class="hero-banner">
       <div class="hero-content">
-        <h2>Catálogo de Moda & Inventario</h2>
+        <h2>Catálogo</h2>
         <p>Administración general de Calzado, Playeras, Pantalones y Accesorios de Dama y Caballero.</p>
       </div>
       <button id="btnAddProduct" class="btn-add-product" onclick="openProductModal()">
@@ -891,42 +900,30 @@
     </div>
   </div>
 
-  <!-- Modal: Login & Selección de Área -->
+  <!-- Modal: Login Exclusivo para la Propietaria -->
   <div class="modal-overlay" id="loginModal" onclick="handleOverlayClick(event, 'loginModal')">
     <div class="modal-card">
       <div class="modal-header">
         <div class="modal-title">
           <i class="fa-solid fa-user-shield" style="color: var(--secondary);"></i>
-          <span>Ingreso de Administradora</span>
+          <span>Acceso Propietaria</span>
         </div>
         <button class="btn-close-modal" type="button" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="loginName">Nombre de la Administradora</label>
-          <input type="text" class="form-control" id="loginName" placeholder="Ej: Sofia Morales" required>
+          <label for="loginEmail">Correo Electrónico</label>
+          <input type="email" class="form-control" id="loginEmail" placeholder="propietaria@urbanboutique.com" required>
         </div>
 
         <div class="form-group">
-          <label for="loginArea">Área Asignada a Gestionar</label>
-          <select class="form-control" id="loginArea" required>
-            <option value="Administración General">Administración General</option>
-            <option value="Calzado Dama">Calzado Dama</option>
-            <option value="Calzado Caballero">Calzado Caballero</option>
-            <option value="Ropa Dama">Ropa Dama</option>
-            <option value="Ropa Caballero">Ropa Caballero</option>
-            <option value="Carteras & Accesorios Dama">Carteras & Accesorios Dama</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="loginSizeRef">Talla / Referencia de Monitoreo</label>
-          <input type="text" class="form-control" id="loginSizeRef" placeholder="Ej: Talla 37 (Calzado) o M (Ropa)">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
         </div>
 
         <button type="submit" class="btn-submit">
-          <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión en Área
+          <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión para Gestionar
         </button>
       </form>
     </div>
@@ -1151,7 +1148,7 @@
 
               <div class="card-footer">
                 <div class="price-tag"><span>Q</span>${parseFloat(p.precio).toFixed(2)}</div>
-                <div class="card-actions">
+                <div class="card-actions" style="display: ${currentUser ? 'flex' : 'none'};">
                   <button class="btn-icon btn-edit" onclick="editProduct('${p.id}')" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
                   </button>
@@ -1240,23 +1237,18 @@
 
     window.handleLogin = function(e) {
       e.preventDefault();
-      const name = document.getElementById('loginName').value;
-      const area = document.getElementById('loginArea').value;
-      const sizeRef = document.getElementById('loginSizeRef').value;
+      const email = document.getElementById('loginEmail').value;
 
-      currentUser = { name, area, sizeRef };
+      currentUser = { email, name: 'Propietaria' };
 
       document.getElementById('userBadgeArea').innerHTML = `
         <div class="user-badge">
-          <div class="user-avatar">${name.charAt(0).toUpperCase()}</div>
+          <div class="user-avatar">P</div>
           <div class="user-info">
-            <p>${name}</p>
-            <span><i class="fa-solid fa-location-dot"></i> ${area} ${sizeRef ? `(${sizeRef})` : ''}</span>
+            <p>Propietaria</p>
+            <span><i class="fa-solid fa-circle-check" style="color: #00FF9D;"></i> Modo Gestión</span>
           </div>
           <div class="user-actions">
-            <button class="btn-user-action" onclick="openLoginModal()" title="Cambiar de Área">
-              <i class="fa-solid fa-rotate"></i>
-            </button>
             <button class="btn-user-action" onclick="logoutUser()" title="Cerrar Sesión">
               <i class="fa-solid fa-power-off"></i>
             </button>
@@ -1268,24 +1260,25 @@
       if (btnAdd) btnAdd.style.display = 'flex';
 
       closeLoginModal();
-      showToast(`¡Bienvenida ${name}! Sesión iniciada en ${area}`);
+      renderProducts();
+      showToast('¡Sesión iniciada con éxito para gestión!');
     };
 
     window.logoutUser = function() {
       currentUser = null;
       document.getElementById('userBadgeArea').innerHTML = `
         <button id="btnLoginTrigger" class="btn-login-trigger" type="button" onclick="openLoginModal()">
-          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión / Área
+          <i class="fa-solid fa-user-gear"></i> Iniciar Sesión Propietaria
         </button>
       `;
 
-      // Volver a adjuntar escuchador al nuevo botón creado dinámicamente
       const newLoginBtn = document.getElementById('btnLoginTrigger');
       if (newLoginBtn) newLoginBtn.addEventListener('click', openLoginModal);
 
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'none';
 
+      renderProducts();
       showToast('Sesión cerrada correctamente');
     };
 
