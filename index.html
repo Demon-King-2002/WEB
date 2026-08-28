@@ -1,8 +1,3 @@
-Aquí tienes el código completo con la lógica de autenticación en JavaScript completamente reparada según tus instrucciones. No he alterado absolutamente nada de la estructura visual, ni los estilos, ni el diseño boutique en Quetzales.
-
-Únicamente modifiqué el bloque `<script>` para utilizar las credenciales exactas que proporcionaste, implementar el manejo de errores con `alert()`, asegurar la persistencia de la sesión con `getUser()` y adaptar la lógica de ocultar/mostrar las funciones de administración al diseño existente.
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -236,7 +231,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     .main-wrapper {
       max-width: 1300px;
       margin: 30px auto;
-      padding: 0 24px;
+      padding: 0 16px;
     }
 
     .hero-banner {
@@ -418,10 +413,18 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       color: var(--text-muted);
     }
 
+    /* Solución de Responsividad 2 columnas móvil / 4 en PC */
     .products-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
-      gap: 25px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .products-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 25px;
+      }
     }
 
     .product-card {
@@ -445,10 +448,16 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .card-img-wrapper {
       width: 100%;
-      height: 240px;
+      height: 180px;
       position: relative;
       overflow: hidden;
       background: #F9EFF9;
+    }
+
+    @media (min-width: 768px) {
+      .card-img-wrapper {
+        height: 240px;
+      }
     }
 
     .card-img-wrapper img {
@@ -464,11 +473,11 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .badge-gender {
       position: absolute;
-      top: 12px;
-      left: 12px;
-      padding: 5px 12px;
+      top: 8px;
+      left: 8px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.5px;
@@ -482,86 +491,136 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .badge-stock {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 8px;
+      right: 8px;
       background: rgba(0, 0, 0, 0.65);
       color: white;
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-radius: 20px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
     }
 
     .card-body {
-      padding: 20px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       flex-grow: 1;
     }
 
+    @media (min-width: 768px) {
+      .card-body {
+        padding: 20px;
+      }
+      .badge-gender { top: 12px; left: 12px; font-size: 11px; padding: 5px 12px;}
+      .badge-stock { top: 12px; right: 12px; font-size: 11px; padding: 5px 10px;}
+    }
+
     .category-tag {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 800;
       color: var(--primary);
       text-transform: uppercase;
       letter-spacing: 1px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .product-title {
-      font-size: 17px;
+      font-size: 14px;
       font-weight: 800;
       color: var(--text-dark);
-      margin-bottom: 8px;
-      line-height: 1.3;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    @media (min-width: 768px) {
+      .category-tag { font-size: 11px; margin-bottom: 6px; }
+      .product-title { font-size: 17px; margin-bottom: 8px; line-height: 1.3;}
     }
 
     .sizes-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px;
-      margin: 10px 0 16px 0;
+      gap: 4px;
+      margin: 8px 0 12px 0;
     }
 
     .size-chip {
       background: #F2E6F2;
       color: var(--text-dark);
-      padding: 3px 9px;
-      border-radius: 8px;
-      font-size: 11px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 10px;
       font-weight: 700;
       border: 1px solid #E2D2E2;
+    }
+
+    @media (min-width: 768px) {
+      .sizes-container { gap: 6px; margin: 10px 0 16px 0; }
+      .size-chip { padding: 3px 9px; border-radius: 8px; font-size: 11px; }
     }
 
     .card-footer {
       margin-top: auto;
       display: flex;
+      flex-wrap: wrap;
       justify-content: space-between;
       align-items: center;
-      padding-top: 12px;
+      gap: 8px;
+      padding-top: 10px;
       border-top: 1px dashed #EAE0EA;
     }
 
     .price-tag {
-      font-size: 20px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text-dark);
     }
 
     .price-tag span {
       color: var(--primary);
-      font-size: 14px;
+      font-size: 12px;
       margin-right: 2px;
+    }
+
+    @media (min-width: 768px) {
+      .card-footer { padding-top: 12px; }
+      .price-tag { font-size: 20px; }
+      .price-tag span { font-size: 14px; }
+    }
+
+    .btn-whatsapp {
+      background: #25D366;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.3s ease;
+      flex-grow: 1;
+      justify-content: center;
+    }
+
+    .btn-whatsapp:hover {
+      background: #128C7E;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(37, 211, 102, 0.3);
     }
 
     .card-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+      width: 100%;
+      justify-content: flex-end;
     }
 
     .btn-icon {
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: none;
       display: flex;
@@ -569,7 +628,13 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s ease;
-      font-size: 14px;
+      font-size: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .btn-whatsapp { flex-grow: 0; font-size: 13px; padding: 6px 14px;}
+      .card-actions { width: auto; gap: 8px; }
+      .btn-icon { width: 36px; height: 36px; font-size: 14px; }
     }
 
     .btn-edit { background: #F0E6FF; color: var(--secondary); }
@@ -592,7 +657,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       justify-content: center;
       opacity: 0;
       transition: opacity 0.2s ease-in-out;
-      padding: 20px;
+      padding: 16px;
     }
 
     .modal-overlay.active {
@@ -606,12 +671,16 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       width: 100%;
       max-width: 520px;
       border-radius: var(--radius);
-      padding: 32px;
+      padding: 24px;
       box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35);
       position: relative;
-      max-height: 90vh;
+      max-height: 95vh;
       overflow-y: auto;
       z-index: 1000000;
+    }
+
+    @media (min-width: 768px) {
+      .modal-card { padding: 32px; }
     }
 
     .modal-header {
@@ -622,7 +691,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     }
 
     .modal-title {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       color: var(--text-dark);
       display: flex;
@@ -630,15 +699,19 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       gap: 10px;
     }
 
+    @media (min-width: 768px) {
+      .modal-title { font-size: 22px; }
+    }
+
     .btn-close-modal {
       background: #F4E8F4;
       border: none;
-      width: 36px;
-      height: 36px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       cursor: pointer;
       color: var(--text-muted);
-      font-size: 16px;
+      font-size: 14px;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
@@ -651,7 +724,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     }
 
     .form-group {
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
 
     .form-group label {
@@ -664,7 +737,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .form-control {
       width: 100%;
-      padding: 12px 16px;
+      padding: 12px 14px;
       border-radius: 12px;
       border: 1.5px solid #E2D2E2;
       font-size: 14px;
@@ -682,8 +755,13 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .form-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 768px) {
+      .form-row { grid-template-columns: 1fr 1fr; gap: 16px; }
+      .form-group { margin-bottom: 18px; }
     }
 
     .btn-submit {
@@ -708,7 +786,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 50px 20px;
       grid-column: 1 / -1;
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -716,14 +794,14 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     }
 
     .empty-state i {
-      font-size: 50px;
+      font-size: 40px;
       color: var(--primary);
       margin-bottom: 16px;
       opacity: 0.6;
     }
 
     .empty-state h3 {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
       margin-bottom: 8px;
     }
@@ -734,13 +812,13 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       right: 24px;
       background: var(--text-dark);
       color: white;
-      padding: 14px 24px;
+      padding: 12px 20px;
       border-radius: 30px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
       display: flex;
       align-items: center;
       gap: 12px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       z-index: 1000001;
       transform: translateY(100px);
@@ -754,7 +832,16 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     }
 
     .toast i {
-      font-size: 18px;
+      font-size: 16px;
+    }
+
+    @media (min-width: 768px) {
+      .hero-content h2 { font-size: 42px; }
+      .hero-banner { padding: 50px 60px; }
+    }
+    
+    @media (max-width: 767px) {
+      .hero-banner { flex-direction: column; text-align: center; gap: 20px; padding: 30px 20px;}
     }
   </style>
 </head>
@@ -775,7 +862,6 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         </div>
       </a>
 
-      <!-- Contenedor dinámico de la sesión/botón de login -->
       <div id="userBadgeArea">
         <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
           <i class="fa-solid fa-user-gear"></i>
@@ -790,7 +876,6 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         <h2>✨ Tendencias y Estilo Urbano ✨</h2>
         <p>Explora nuestra colección curada de calzado, prendas de alta calidad y accesorios vanguardistas para dama y caballero.</p>
       </div>
-      <!-- Botón de administración de inventario -->
       <button id="btnAddProduct" class="btn-add-product" type="button">
         <i class="fa-solid fa-plus-circle"></i> Nuevo Producto
       </button>
@@ -799,7 +884,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     <div class="filters-section">
       <div class="category-tabs">
         <button class="tab-btn active" data-category="todos" type="button">
-          <i class="fa-solid fa-border-all"></i> Todos los Productos
+          <i class="fa-solid fa-border-all"></i> Todos
         </button>
         <button class="tab-btn" data-category="zapatos" type="button">
           <i class="fa-solid fa-shoe-prints"></i> Zapatos
@@ -844,6 +929,8 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
       <form id="productForm">
         <input type="hidden" id="prodId">
+        <!-- Campo oculto para la URL final -->
+        <input type="hidden" id="prodImgUrl">
 
         <div class="form-group">
           <label for="prodName">Nombre del Producto</label>
@@ -889,11 +976,12 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         </div>
 
         <div class="form-group">
-          <label for="prodImg">URL de la Imagen</label>
-          <input type="url" class="form-control" id="prodImg" placeholder="https://ejemplo.com/imagen.jpg">
+          <label for="prodImgFile">Fotografía del Producto (Cámara o Galería)</label>
+          <input type="file" accept="image/*" capture="environment" class="form-control" id="prodImgFile">
+          <small style="color: var(--text-muted); font-size: 11px; margin-top: 4px; display: block;">Se almacenará en el Bucket 'productos' de Supabase. Deja vacío si no deseas cambiar la imagen actual.</small>
         </div>
 
-        <button type="submit" class="btn-submit">
+        <button type="submit" class="btn-submit" id="btnSubmitProd">
           <i class="fa-solid fa-floppy-disk"></i> Guardar Producto
         </button>
       </form>
@@ -934,9 +1022,9 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
   </div>
 
   <script>
-    // 1. Credenciales Oficiales de Supabase (Fijadas exactamente según tu instrucción)
-    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co
-    const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI
+    // Credenciales estrictas de Supabase
+    const SUPABASE_URL = 'https://supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     let supabase = null;
     let currentUser = null;
 
@@ -953,7 +1041,6 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
     let currentGender = 'todos';
 
     document.addEventListener('DOMContentLoaded', () => {
-      // 3. Persistencia de Sesión al Cargar la Página
       checkSession();
       
       document.body.addEventListener('click', (e) => {
@@ -1026,6 +1113,11 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         loginForm.addEventListener('submit', handleLogin);
       }
 
+      const productForm = document.getElementById('productForm');
+      if (productForm) {
+        productForm.addEventListener('submit', saveProduct);
+      }
+
       setInterval(() => {
         document.querySelectorAll('body > div').forEach(el => {
           if (el.id !== 'productModal' && el.id !== 'loginModal' && el.id !== 'toastMsg' && !el.classList.contains('glow-sphere-1') && !el.classList.contains('glow-sphere-2') && el.tagName !== 'HEADER' && el.tagName !== 'MAIN' && el.tagName !== 'SCRIPT') {
@@ -1039,7 +1131,6 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       loadProductsFromSupabase();
     });
 
-    // Función modificada para usar getUser() en lugar de getSession()
     async function checkSession() {
       if (supabase) {
         const { data: { user }, error } = await supabase.auth.getUser();
@@ -1080,11 +1171,13 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         document.getElementById('prodPrice').value = prod.precio;
         document.getElementById('prodStock').value = prod.stock;
         document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
-        document.getElementById('prodImg').value = prod.imagen_url || '';
+        document.getElementById('prodImgUrl').value = prod.imagen_url || '';
+        document.getElementById('prodImgFile').value = '';
       } else {
         document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> <span>Ingresar Producto</span>`;
         if (form) form.reset();
         document.getElementById('prodId').value = '';
+        document.getElementById('prodImgUrl').value = '';
       }
 
       modal.style.display = 'flex';
@@ -1116,7 +1209,7 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     function formatNumber(num) {
       let val = Number(num);
-      return (val % 1 === 0) ? val.toString() : val.toFixed(1);
+      return (val % 1 === 0) ? val.toString() : val.toFixed(2);
     }
 
     function renderProducts() {
@@ -1151,6 +1244,8 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
         const badgeClass = p.genero === 'dama' ? 'badge-dama' : (p.genero === 'caballero' ? 'badge-caballero' : 'badge-unisex');
         const tallasArr = Array.isArray(p.tallas) ? p.tallas : p.tallas.split(',');
         const imgUrl = p.imagen_url || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80';
+        
+        const whatsappMsg = `Hola! Me interesa el producto: ${p.nombre} (Q${formatNumber(p.precio)}).`;
 
         return `
           <div class="product-card">
@@ -1170,7 +1265,11 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
               <div class="card-footer">
                 <div class="price-tag"><span>Q</span>${formatNumber(p.precio)}</div>
-                <!-- Los botones de acción se muestran solo si hay usuario logueado -->
+                
+                <a href="https://api.whatsapp.com/send?phone=&text=${encodeURIComponent(whatsappMsg)}" target="_blank" class="btn-whatsapp">
+                  <i class="fa-brands fa-whatsapp"></i> Lo quiero
+                </a>
+
                 <div class="card-actions" style="display: ${currentUser ? 'flex' : 'none'};">
                   <button class="btn-icon btn-edit" onclick="editProduct('${p.id}')" title="Editar">
                     <i class="fa-solid fa-pen-to-square"></i>
@@ -1188,40 +1287,74 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
 
     async function saveProduct(e) {
       e.preventDefault();
-      
-      const id = document.getElementById('prodId').value;
-      const nombre = document.getElementById('prodName').value;
-      const categoria = document.getElementById('prodCategory').value;
-      const genero = document.getElementById('prodGender').value;
-      const precio = parseFloat(document.getElementById('prodPrice').value);
-      const stock = parseInt(document.getElementById('prodStock').value);
-      const tallas = document.getElementById('prodSizes').value.split(',').map(s => s.trim());
-      const imagen_url = document.getElementById('prodImg').value;
+      const btnSubmit = document.getElementById('btnSubmitProd');
+      const originalText = btnSubmit.innerHTML;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Guardando...';
+      btnSubmit.disabled = true;
 
-      const productPayload = { nombre, categoria, genero, precio, stock, tallas, imagen_url };
+      try {
+        const id = document.getElementById('prodId').value;
+        const nombre = document.getElementById('prodName').value;
+        const categoria = document.getElementById('prodCategory').value;
+        const genero = document.getElementById('prodGender').value;
+        const precio = parseFloat(document.getElementById('prodPrice').value);
+        const stock = parseInt(document.getElementById('prodStock').value);
+        const tallas = document.getElementById('prodSizes').value.split(',').map(s => s.trim());
+        
+        let imagen_url = document.getElementById('prodImgUrl').value;
+        const fileInput = document.getElementById('prodImgFile');
 
-      if (id) {
-        const index = productsList.findIndex(p => p.id === id);
-        if (index !== -1) {
-          productsList[index] = { ...productsList[index], ...productPayload };
+        // Subida de imagen al bucket "productos"
+        if (fileInput.files.length > 0 && supabase) {
+          const file = fileInput.files[0];
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+          
+          const { error: uploadError } = await supabase.storage
+            .from('productos')
+            .upload(fileName, file, { cacheControl: '3600', upsert: false });
+            
+          if (uploadError) throw new Error('Error al subir imagen: ' + uploadError.message);
+          
+          const { data: publicUrlData } = supabase.storage
+            .from('productos')
+            .getPublicUrl(fileName);
+            
+          imagen_url = publicUrlData.publicUrl;
         }
-        if (supabase) {
-          try { await supabase.from('productos').update(productPayload).eq('id', id); } catch(err){}
-        }
-        showToast('Producto actualizado correctamente', false);
-      } else {
-        const newId = Date.now().toString();
-        const newProd = { id: newId, ...productPayload };
-        productsList.unshift(newProd);
 
-        if (supabase) {
-          try { await supabase.from('productos').insert([productPayload]); } catch(err){}
+        const productPayload = { nombre, categoria, genero, precio, stock, tallas, imagen_url };
+
+        if (id) {
+          const index = productsList.findIndex(p => p.id === id);
+          if (index !== -1) {
+            productsList[index] = { ...productsList[index], ...productPayload };
+          }
+          if (supabase) {
+            const { error: updateError } = await supabase.from('productos').update(productPayload).eq('id', id);
+            if (updateError) throw updateError;
+          }
+          showToast('Producto actualizado correctamente', false);
+        } else {
+          const newId = Date.now().toString();
+          const newProd = { id: newId, ...productPayload };
+          productsList.unshift(newProd);
+
+          if (supabase) {
+            const { error: insertError } = await supabase.from('productos').insert([productPayload]);
+            if (insertError) throw insertError;
+          }
+          showToast('Producto registrado exitosamente', false);
         }
-        showToast('Producto registrado exitosamente', false);
+
+        closeProductModal();
+        renderProducts();
+      } catch (err) {
+        alert("Error al guardar el producto: " + err.message);
+      } finally {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
       }
-
-      closeProductModal();
-      renderProducts();
     }
 
     window.editProduct = function(id) {
@@ -1233,46 +1366,50 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
       if (confirm('¿Estás segura de eliminar este producto del inventario?')) {
         productsList = productsList.filter(p => p.id !== id);
         if (supabase) {
-          try { await supabase.from('productos').delete().eq('id', id); } catch(err){}
+          try { 
+            const { error } = await supabase.from('productos').delete().eq('id', id); 
+            if(error) throw error;
+          } catch(err) {
+            alert("Error al eliminar: " + err.message);
+            return;
+          }
         }
         showToast('Producto eliminado del sistema', false);
         renderProducts();
       }
     };
 
-    // 2. Lógica de Autenticación Reparada
+    // Solución del Error Crítico en Login
     async function handleLogin(e) {
-      e.preventDefault(); // Prevenir recarga de página al enviar formulario
+      e.preventDefault();
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
 
       if (supabase) {
-        // Usa correctamente signInWithPassword
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email,
-          password: password,
-        });
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password,
+          });
 
-        // Manejo estricto de errores con alert() según lo solicitado
-        if (error) {
-          alert('Error de autenticación desde Supabase: ' + error.message);
-          return;
+          if (error) {
+            alert('Error de autenticación desde Supabase: ' + error.message);
+            return;
+          }
+
+          currentUser = data.user;
+          updateUIAfterLogin(email);
+          closeLoginModal();
+          showToast('¡Sesión iniciada con éxito!', false);
+        } catch (err) {
+          alert('Error crítico durante el inicio de sesión: ' + err.message);
         }
-
-        // Éxito: Guardar sesión y adaptar interfaz
-        currentUser = data.user;
-        updateUIAfterLogin(email);
-        closeLoginModal(); // Ocultar el modal de login inmediatamente
-        showToast('¡Sesión iniciada con éxito!', false);
       } else {
         alert("Error crítico: El cliente de Supabase no ha podido inicializarse con las credenciales indicadas.");
       }
     }
 
-    // Esta función maneja el cambio entre la vista pública y el panel admin
-    // usando la estructura actual de tu HTML dinámicamente sin romper tu diseño
     function updateUIAfterLogin(email) {
-      // Reemplaza el botón de login por el Badge de Propietaria
       document.getElementById('userBadgeArea').innerHTML = `
         <div class="user-badge">
           <div class="user-avatar">P</div>
@@ -1287,21 +1424,19 @@ Aquí tienes el código completo con la lógica de autenticación en JavaScript 
           </div>
         </div>
       `;
-      // Muestra el botón para agregar productos (Vista Admin)
+      
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'flex';
       
-      // Actualiza la lista para mostrar botones de editar/borrar
       renderProducts();
     }
 
     async function logoutUser() {
       if (supabase) {
-        await supabase.auth.signOut();
+        try { await supabase.auth.signOut(); } catch(e) {}
       }
       currentUser = null;
       
-      // Regresar a la vista pública
       document.getElementById('userBadgeArea').innerHTML = `
         <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
           <i class="fa-solid fa-user-gear"></i>
