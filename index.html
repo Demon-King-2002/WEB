@@ -14,7 +14,7 @@
 
   <style>
     :root {
-      --primary: #FF1493;       /* Deep Pink / Magenta Vibrante */
+      --primary: #FF1493;       /* Magenta Vibrante */
       --primary-hover: #E0007A;
       --secondary: #7B2CBF;     /* Violeta Eléctrico */
       --accent: #FF5E7E;        /* Coral Vivo */
@@ -268,7 +268,7 @@
       cursor: pointer;
       box-shadow: 0 8px 20px rgba(0,0,0,0.15);
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      display: none; /* Se activa dinámicamente al iniciar sesión */
+      display: none;
       align-items: center;
       gap: 10px;
       white-space: nowrap;
@@ -280,7 +280,7 @@
       color: var(--primary-hover);
     }
 
-    /* Filtros y Navegación */
+    /* Filtros */
     .filters-section {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
@@ -462,20 +462,9 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .badge-dama {
-      background: rgba(255, 20, 147, 0.85);
-      color: white;
-    }
-
-    .badge-caballero {
-      background: rgba(123, 44, 191, 0.85);
-      color: white;
-    }
-
-    .badge-unisex {
-      background: rgba(255, 165, 0, 0.85);
-      color: white;
-    }
+    .badge-dama { background: rgba(255, 20, 147, 0.85); color: white; }
+    .badge-caballero { background: rgba(123, 44, 191, 0.85); color: white; }
+    .badge-unisex { background: rgba(255, 165, 0, 0.85); color: white; }
 
     .badge-stock {
       position: absolute;
@@ -569,27 +558,12 @@
       font-size: 14px;
     }
 
-    .btn-edit {
-      background: #F0E6FF;
-      color: var(--secondary);
-    }
+    .btn-edit { background: #F0E6FF; color: var(--secondary); }
+    .btn-edit:hover { background: var(--secondary); color: white; }
+    .btn-delete { background: #FFE6E6; color: #FF3B3B; }
+    .btn-delete:hover { background: #FF3B3B; color: white; }
 
-    .btn-edit:hover {
-      background: var(--secondary);
-      color: white;
-    }
-
-    .btn-delete {
-      background: #FFE6E6;
-      color: #FF3B3B;
-    }
-
-    .btn-delete:hover {
-      background: #FF3B3B;
-      color: white;
-    }
-
-    /* Modal System Garantizado */
+    /* Estructura Modal Asegurada */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -599,18 +573,19 @@
       background: rgba(30, 5, 32, 0.75);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
-      z-index: 9999;
+      z-index: 999999;
       display: none;
       align-items: center;
       justify-content: center;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.2s ease-in-out;
       padding: 20px;
     }
 
     .modal-overlay.active {
       display: flex !important;
       opacity: 1 !important;
+      visibility: visible !important;
     }
 
     .modal-card {
@@ -623,7 +598,7 @@
       position: relative;
       max-height: 90vh;
       overflow-y: auto;
-      z-index: 10000;
+      z-index: 1000000;
     }
 
     .modal-header {
@@ -718,7 +693,6 @@
       transform: translateY(-2px);
     }
 
-    /* Estado vacío */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -741,7 +715,6 @@
       margin-bottom: 8px;
     }
 
-    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -756,7 +729,7 @@
       gap: 12px;
       font-size: 14px;
       font-weight: 700;
-      z-index: 10001;
+      z-index: 1000001;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -801,8 +774,6 @@
 
   <!-- Main Body -->
   <main class="main-wrapper">
-    
-    <!-- Hero Banner -->
     <div class="hero-banner">
       <div class="hero-content">
         <h2>Catálogo de Moda & Inventario</h2>
@@ -813,7 +784,7 @@
       </button>
     </div>
 
-    <!-- Category Tabs & Gender Sub-filters -->
+    <!-- Filters -->
     <div class="filters-section">
       <div class="category-tabs">
         <button class="tab-btn active" onclick="filterCategory('todos', this)">
@@ -848,10 +819,7 @@
     </div>
 
     <!-- Product Grid -->
-    <div class="products-grid" id="productsGrid">
-      <!-- Generado mediante JavaScript -->
-    </div>
-
+    <div class="products-grid" id="productsGrid"></div>
   </main>
 
   <!-- Modal: Agregar / Editar Producto -->
@@ -970,18 +938,84 @@
     <span id="toastText">Operación realizada con éxito</span>
   </div>
 
-  <!-- Lógica de JavaScript -->
   <script>
-    // Supabase Configuration
-    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-    
-    let supabase = null;
-    if (window.supabase && window.supabase.createClient) {
-      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    /* 1. FUNCIONES GLOBALES DE CONTROL DE MODALES AL INICIO DEL SCRIPT */
+    function openLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('active'), 10);
+      }
     }
 
-    // Datos iniciales de demostración
+    function closeLoginModal() {
+      const modal = document.getElementById('loginModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    function openProductModal(prod = null) {
+      const modal = document.getElementById('productModal');
+      const form = document.getElementById('productForm');
+      if (!modal) return;
+      
+      if (prod) {
+        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>Editar Producto</span>`;
+        document.getElementById('prodId').value = prod.id;
+        document.getElementById('prodName').value = prod.nombre;
+        document.getElementById('prodCategory').value = prod.categoria;
+        document.getElementById('prodGender').value = prod.genero;
+        document.getElementById('prodPrice').value = prod.precio;
+        document.getElementById('prodStock').value = prod.stock;
+        document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
+        document.getElementById('prodImg').value = prod.imagen_url || '';
+      } else {
+        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> <span>Ingresar Producto</span>`;
+        if (form) form.reset();
+        document.getElementById('prodId').value = '';
+      }
+
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeProductModal() {
+      const modal = document.getElementById('productModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    function handleOverlayClick(event, modalId) {
+      if (event.target.id === modalId) {
+        if (modalId === 'loginModal') closeLoginModal();
+        if (modalId === 'productModal') closeProductModal();
+      }
+    }
+
+    // Exposición global
+    window.openLoginModal = openLoginModal;
+    window.closeLoginModal = closeLoginModal;
+    window.openProductModal = openProductModal;
+    window.closeProductModal = closeProductModal;
+    window.handleOverlayClick = handleOverlayClick;
+
+    /* 2. INICIALIZACIÓN Y VARIABLES DE ESTADO */
+    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
+    let supabase = null;
+
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.warn('Modo local activo:', e);
+    }
+
     let productsList = [
       {
         id: '1',
@@ -1039,59 +1073,12 @@
     let currentGender = 'todos';
     let currentUser = null;
 
-    // Funciones globales para control de modales
-    window.openLoginModal = function() {
-      const modal = document.getElementById('loginModal');
-      if (modal) {
-        modal.classList.add('active');
-      }
-    };
-
-    window.closeLoginModal = function() {
-      const modal = document.getElementById('loginModal');
-      if (modal) {
-        modal.classList.remove('active');
-      }
-    };
-
-    window.openProductModal = function(prod = null) {
-      const modal = document.getElementById('productModal');
-      const form = document.getElementById('productForm');
-      
-      if (prod) {
-        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-pen-to-square" style="color: var(--primary);"></i> <span>Editar Producto</span>`;
-        document.getElementById('prodId').value = prod.id;
-        document.getElementById('prodName').value = prod.nombre;
-        document.getElementById('prodCategory').value = prod.categoria;
-        document.getElementById('prodGender').value = prod.genero;
-        document.getElementById('prodPrice').value = prod.precio;
-        document.getElementById('prodStock').value = prod.stock;
-        document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
-        document.getElementById('prodImg').value = prod.imagen_url || '';
-      } else {
-        document.getElementById('modalProductTitle').innerHTML = `<i class="fa-solid fa-box-open" style="color: var(--primary);"></i> <span>Ingresar Producto</span>`;
-        form.reset();
-        document.getElementById('prodId').value = '';
-      }
-
-      modal.classList.add('active');
-    };
-
-    window.closeProductModal = function() {
-      const modal = document.getElementById('productModal');
-      if (modal) {
-        modal.classList.remove('active');
-      }
-    };
-
-    window.handleOverlayClick = function(event, modalId) {
-      if (event.target.id === modalId) {
-        document.getElementById(modalId).classList.remove('active');
-      }
-    };
-
-    // Inicialización al cargar la página
     document.addEventListener('DOMContentLoaded', () => {
+      // Garantizar evento click en el botón de login
+      const loginBtn = document.getElementById('btnLoginTrigger');
+      if (loginBtn) {
+        loginBtn.addEventListener('click', openLoginModal);
+      }
       loadProductsFromSupabase();
     });
 
@@ -1106,7 +1093,7 @@
             }));
           }
         } catch (e) {
-          console.warn('Servidor local/demostración activo:', e);
+          console.warn('Usando catálogo por defecto');
         }
       }
       renderProducts();
@@ -1114,7 +1101,9 @@
 
     function renderProducts() {
       const grid = document.getElementById('productsGrid');
-      const searchVal = document.getElementById('searchInput').value.toLowerCase();
+      if (!grid) return;
+
+      const searchVal = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
 
       const filtered = productsList.filter(p => {
         const matchesCategory = currentCategory === 'todos' || p.categoria === currentCategory;
@@ -1215,7 +1204,7 @@
           productsList[index] = { ...productsList[index], ...productPayload };
         }
         if (supabase) {
-          await supabase.from('productos').update(productPayload).eq('id', id);
+          try { await supabase.from('productos').update(productPayload).eq('id', id); } catch(err){}
         }
         showToast('Producto actualizado correctamente');
       } else {
@@ -1224,7 +1213,7 @@
         productsList.unshift(newProd);
 
         if (supabase) {
-          await supabase.from('productos').insert([productPayload]);
+          try { await supabase.from('productos').insert([productPayload]); } catch(err){}
         }
         showToast('Producto registrado exitosamente');
       }
@@ -1242,14 +1231,13 @@
       if (confirm('¿Estás segura de eliminar este producto del inventario?')) {
         productsList = productsList.filter(p => p.id !== id);
         if (supabase) {
-          await supabase.from('productos').delete().eq('id', id);
+          try { await supabase.from('productos').delete().eq('id', id); } catch(err){}
         }
         showToast('Producto eliminado del sistema');
         renderProducts();
       }
     }
 
-    // Login & Gestión de Sesión
     window.handleLogin = function(e) {
       e.preventDefault();
       const name = document.getElementById('loginName').value;
@@ -1277,9 +1265,7 @@
       `;
 
       const btnAdd = document.getElementById('btnAddProduct');
-      if (btnAdd) {
-        btnAdd.style.display = 'flex';
-      }
+      if (btnAdd) btnAdd.style.display = 'flex';
 
       closeLoginModal();
       showToast(`¡Bienvenida ${name}! Sesión iniciada en ${area}`);
@@ -1293,21 +1279,24 @@
         </button>
       `;
 
+      // Volver a adjuntar escuchador al nuevo botón creado dinámicamente
+      const newLoginBtn = document.getElementById('btnLoginTrigger');
+      if (newLoginBtn) newLoginBtn.addEventListener('click', openLoginModal);
+
       const btnAdd = document.getElementById('btnAddProduct');
-      if (btnAdd) {
-        btnAdd.style.display = 'none';
-      }
+      if (btnAdd) btnAdd.style.display = 'none';
 
       showToast('Sesión cerrada correctamente');
     };
 
     function showToast(msg) {
       const toast = document.getElementById('toastMsg');
-      document.getElementById('toastText').innerText = msg;
-      toast.classList.add('active');
-      setTimeout(() => {
-        toast.classList.remove('active');
-      }, 3500);
+      const toastText = document.getElementById('toastText');
+      if (toast && toastText) {
+        toastText.innerText = msg;
+        toast.classList.add('active');
+        setTimeout(() => toast.classList.remove('active'), 3500);
+      }
     }
   </script>
 </body>
