@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Urban Boutique - Catálogo Exclusivo</title>
+  <title>Boutique - Catálogo Exclusivo</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -856,7 +856,7 @@
           <i class="fa-solid fa-bag-shopping"></i>
         </div>
         <div class="logo-text">
-          <h1>Urban Boutique</h1>
+          <h1>Boutique</h1>
           <span>Catálogo Exclusivo</span>
         </div>
       </a>
@@ -872,7 +872,7 @@
   <main class="main-wrapper">
     <div class="hero-banner">
       <div class="hero-content">
-        <h2>✨ Tendencias y Estilo Urbano ✨</h2>
+        <h2>✨ Tendencias y Novedades ✨</h2>
         <p>Explora nuestra colección curada de calzado, prendas de alta calidad y accesorios vanguardistas para dama y caballero.</p>
       </div>
       <button id="btnAddProduct" class="btn-add-product" type="button">
@@ -999,7 +999,7 @@
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
           <label for="login_email">Correo Electrónico</label>
-          <input type="email" class="form-control" id="login_email" placeholder="propietaria@urbanboutique.com" required>
+          <input type="email" class="form-control" id="login_email" placeholder="propietaria@miboutique.com" required>
         </div>
 
         <div class="form-group">
@@ -1022,12 +1022,12 @@
   <script>
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-    let supabase = null;
+    let supabaseClient = null;
     let currentUser = null;
 
     try {
       if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       } else {
         console.error('La librería de Supabase (CDN) no se cargó correctamente.');
       }
@@ -1040,9 +1040,9 @@
     let currentGender = 'todos';
 
     document.addEventListener('DOMContentLoaded', async () => {
-      if (supabase) {
+      if (supabaseClient) {
         try {
-          const { data: { user }, error } = await supabase.auth.getUser();
+          const { data: { user }, error } = await supabaseClient.auth.getUser();
           if (user) {
             currentUser = user;
             updateUIAfterLogin(currentUser.email);
@@ -1138,7 +1138,7 @@
     async function handleLogin(event) {
       event.preventDefault();
 
-      if (!supabase) {
+      if (!supabaseClient) {
         alert('Error: no se pudo inicializar la conexión con Supabase. Verifica tu red e intenta de nuevo.');
         return;
       }
@@ -1154,7 +1154,7 @@
       }
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
         if (error) {
           throw error;
@@ -1227,9 +1227,9 @@
     }
 
     async function loadProductsFromSupabase() {
-      if (supabase) {
+      if (supabaseClient) {
         try {
-          const { data, error } = await supabase.from('productos').select('*');
+          const { data, error } = await supabaseClient.from('productos').select('*');
           if (!error && data) {
             productsList = data.map(item => ({
               ...item,
@@ -1338,18 +1338,18 @@
         let imagen_url = document.getElementById('prodImgUrl').value;
         const fileInput = document.getElementById('prodImgFile');
 
-        if (fileInput.files.length > 0 && supabase) {
+        if (fileInput.files.length > 0 && supabaseClient) {
           const file = fileInput.files[0];
           const fileExt = file.name.split('.').pop();
           const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
           
-          const { error: uploadError } = await supabase.storage
+          const { error: uploadError } = await supabaseClient.storage
             .from('productos')
             .upload(fileName, file, { cacheControl: '3600', upsert: false });
             
           if (uploadError) throw new Error('Error al subir imagen: ' + uploadError.message);
           
-          const { data: publicUrlData } = supabase.storage
+          const { data: publicUrlData } = supabaseClient.storage
             .from('productos')
             .getPublicUrl(fileName);
             
@@ -1363,8 +1363,8 @@
           if (index !== -1) {
             productsList[index] = { ...productsList[index], ...productPayload };
           }
-          if (supabase) {
-            const { error: updateError } = await supabase.from('productos').update(productPayload).eq('id', id);
+          if (supabaseClient) {
+            const { error: updateError } = await supabaseClient.from('productos').update(productPayload).eq('id', id);
             if (updateError) throw updateError;
           }
           showToast('Producto actualizado correctamente', false);
@@ -1373,8 +1373,8 @@
           const newProd = { id: newId, ...productPayload };
           productsList.unshift(newProd);
 
-          if (supabase) {
-            const { error: insertError } = await supabase.from('productos').insert([productPayload]);
+          if (supabaseClient) {
+            const { error: insertError } = await supabaseClient.from('productos').insert([productPayload]);
             if (insertError) throw insertError;
           }
           showToast('Producto registrado exitosamente', false);
@@ -1398,9 +1398,9 @@
     window.deleteProduct = async function(id) {
       if (confirm('¿Estás segura de eliminar este producto del inventario?')) {
         productsList = productsList.filter(p => p.id !== id);
-        if (supabase) {
+        if (supabaseClient) {
           try { 
-            const { error } = await supabase.from('productos').delete().eq('id', id); 
+            const { error } = await supabaseClient.from('productos').delete().eq('id', id); 
             if(error) throw error;
           } catch(err) {
             alert("Error al eliminar: " + err.message);
@@ -1435,8 +1435,8 @@
     }
 
     async function logoutUser() {
-      if (supabase) {
-        try { await supabase.auth.signOut(); } catch(e) {}
+      if (supabaseClient) {
+        try { await supabaseClient.auth.signOut(); } catch(e) {}
       }
       currentUser = null;
       
