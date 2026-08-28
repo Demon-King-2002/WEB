@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -413,7 +414,6 @@
       color: var(--text-muted);
     }
 
-    /* Solución de Responsividad 2 columnas móvil / 4 en PC */
     .products-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -929,7 +929,6 @@
 
       <form id="productForm">
         <input type="hidden" id="prodId">
-        <!-- Campo oculto para la URL final -->
         <input type="hidden" id="prodImgUrl">
 
         <div class="form-group">
@@ -998,15 +997,15 @@
         <button class="btn-close-modal btn-close-login-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
-      <form id="loginForm">
+      <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
-          <label for="loginEmail">Correo Electrónico</label>
-          <input type="email" class="form-control" id="loginEmail" placeholder="propietaria@urbanboutique.com" required>
+          <label for="login_email">Correo Electrónico</label>
+          <input type="email" class="form-control" id="login_email" placeholder="propietaria@urbanboutique.com" required>
         </div>
 
         <div class="form-group">
-          <label for="loginPassword">Contraseña</label>
-          <input type="password" class="form-control" id="loginPassword" placeholder="••••••••" required>
+          <label for="login_password">Contraseña</label>
+          <input type="password" class="form-control" id="login_password" placeholder="••••••••" required>
         </div>
 
         <button type="submit" class="btn-submit">
@@ -1022,8 +1021,7 @@
   </div>
 
   <script>
-    // Credenciales estrictas de Supabase
-    const SUPABASE_URL = 'https://supabase.co';
+    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     let supabase = null;
     let currentUser = null;
@@ -1040,8 +1038,18 @@
     let currentCategory = 'todos';
     let currentGender = 'todos';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      checkSession();
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (supabase) {
+        try {
+          const { data: { user }, error } = await supabase.auth.getUser();
+          if (user) {
+            currentUser = user;
+            updateUIAfterLogin(currentUser.email);
+          }
+        } catch (err) {
+          console.error("Error verificando sesión inicial:", err);
+        }
+      }
       
       document.body.addEventListener('click', (e) => {
         const loginTrigger = e.target.closest('#btnLoginTrigger');
@@ -1108,11 +1116,6 @@
         searchInput.addEventListener('input', () => renderProducts());
       }
 
-      const loginForm = document.getElementById('loginForm');
-      if (loginForm) {
-        loginForm.addEventListener('submit', handleLogin);
-      }
-
       const productForm = document.getElementById('productForm');
       if (productForm) {
         productForm.addEventListener('submit', saveProduct);
@@ -1131,13 +1134,24 @@
       loadProductsFromSupabase();
     });
 
-    async function checkSession() {
-      if (supabase) {
-        const { data: { user }, error } = await supabase.auth.getUser();
-        if (user) {
-          currentUser = user;
-          updateUIAfterLogin(currentUser.email);
+    async function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('login_email').value;
+      const password = document.getElementById('login_password').value;
+
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) {
+          throw error;
         }
+
+        currentUser = data.user;
+        closeLoginModal();
+        updateUIAfterLogin(currentUser.email);
+        showToast('¡Sesión iniciada con éxito!', false);
+      } catch (error) {
+        alert(error.message || 'Error desconocido al iniciar sesión.');
       }
     }
 
@@ -1304,7 +1318,6 @@
         let imagen_url = document.getElementById('prodImgUrl').value;
         const fileInput = document.getElementById('prodImgFile');
 
-        // Subida de imagen al bucket "productos"
         if (fileInput.files.length > 0 && supabase) {
           const file = fileInput.files[0];
           const fileExt = file.name.split('.').pop();
@@ -1378,36 +1391,6 @@
         renderProducts();
       }
     };
-
-    // Solución del Error Crítico en Login
-    async function handleLogin(e) {
-      e.preventDefault();
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-
-      if (supabase) {
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: email,
-            password: password,
-          });
-
-          if (error) {
-            alert('Error de autenticación desde Supabase: ' + error.message);
-            return;
-          }
-
-          currentUser = data.user;
-          updateUIAfterLogin(email);
-          closeLoginModal();
-          showToast('¡Sesión iniciada con éxito!', false);
-        } catch (err) {
-          alert('Error crítico durante el inicio de sesión: ' + err.message);
-        }
-      } else {
-        alert("Error crítico: El cliente de Supabase no ha podido inicializarse con las credenciales indicadas.");
-      }
-    }
 
     function updateUIAfterLogin(email) {
       document.getElementById('userBadgeArea').innerHTML = `
