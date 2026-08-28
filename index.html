@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tienda Premium - Ropa y Calzado</title>
+    
+    <!-- Tailwind CSS (CDN) para diseño responsivo y premium -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Supabase JS (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <style>
+        /* Estilos base minimalistas */
+        body { font-family: 'Inter', -apple-system, sans-serif; background-color: #f9fafb; }
+        .glass-modal { background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); }
+        .loader { border-top-color: #3b82f6; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
+        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        /* Ocultar elementos */
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navbar Pública -->
+    <nav class="bg-black text-white sticky top-0 z-40 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center cursor-pointer" ondblclick="openLoginModal()">
+                    <span class="font-bold text-xl tracking-widest uppercase">URBAN<span class="text-gray-400">STORE</span></span>
+                </div>
+                <!-- Buscador -->
+                <div class="flex-1 max-w-md mx-4">
+                    <input type="text" id="searchInput" oninput="filterProducts()" placeholder="Buscar marca o producto..." 
+                        class="w-full bg-gray-800 text-white border border-gray-700 rounded-full py-2 px-4 focus:outline-none focus:ring-2 focus:ring-gray-400 transition-all text-sm">
+                </div>
+                <!-- Botón de admin visible solo si hay sesión -->
+                <button id="btnAdminPanel" onclick="toggleAdminPanel()" class="hidden bg-white text-black px-4 py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition">
+                    Panel Admin
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenedor Principal (Catálogo) -->
+    <main id="public-view" class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+        <div id="loader" class="flex justify-center items-center py-20 hidden">
+            <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4"></div>
+        </div>
+        <div id="products-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            <!-- Los productos se renderizan aquí dinámicamente -->
+        </div>
+        <div id="empty-state" class="hidden text-center py-20 text-gray-500">
+            No se encontraron productos.
+        </div>
+    </main>
+
+    <!-- Panel de Administración (Oculto) -->
+    <main id="admin-view" class="hidden flex-1 max-w-4xl mx-auto px-4 py-8 w-full">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Gestión de Inventario</h2>
+            <button onclick="logout()" class="text-red-500 font-semibold hover:underline">Cerrar Sesión</button>
+        </div>
+
+        <!-- Formulario para agregar/editar -->
+        <div class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <h3 class="text-lg font-semibold mb-4" id="form-title">Agregar Nuevo Producto</h3>
+            <form id="productForm" onsubmit="handleProductSubmit(event)" class="space-y-4">
+                <input type="hidden" id="editProductId">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                        <input type="text" id="p_brand" required class="w-full border-gray-300 border rounded-lg p-2 focus:ring-black focus:border-black">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Modelo</label>
+                        <input type="text" id="p_name" required class="w-full border-gray-300 border rounded-lg p-2 focus:ring-black focus:border-black">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Precio ($)</label>
+                        <input type="number" step="0.01" id="p_price" required class="w-full border-gray-300 border rounded-lg p-2 focus:ring-black focus:border-black">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tallas (Ej: S, M, L o 7, 8.5, 9)</label>
+                        <input type="text" id="p_sizes" required class="w-full border-gray-300 border rounded-lg p-2 focus:ring-black focus:border-black">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Foto del Producto (Cámara o Galería)</label>
+                    <input type="file" id="p_image" accept="image/*" class="w-full border-gray-300 border rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-100 file:text-black hover:file:bg-gray-200">
+                </div>
+                <button type="submit" id="btnSubmitProduct" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition">Guardar Producto</button>
+            </form>
+        </div>
+
+        <!-- Lista de Inventario para Admin -->
+        <div class="bg-white p-6 rounded-xl shadow-md">
+            <h3 class="text-lg font-semibold mb-4">Productos Actuales</h3>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                            <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-products-list" class="divide-y divide-gray-200">
+                        <!-- Lista dinámica de admin -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal de Login Seguro (Se abre con doble clic en el Logo) -->
+    <div id="loginModal" class="fixed inset-0 z-50 glass-modal hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
+            <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-gray-400 hover:text-black text-xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold text-center mb-6">Acceso Restringido</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email de Administrador</label>
+                    <input type="email" id="authEmail" required class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-black focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Contraseña Segura</label>
+                    <input type="password" id="authPassword" required class="mt-1 w-full border border-gray-300 rounded-lg p-3 focus:ring-black focus:border-black">
+                </div>
+                <p id="loginError" class="text-red-500 text-sm hidden"></p>
+                <button type="submit" class="w-full bg-black text-white font-bold py-3 rounded-lg hover:bg-gray-800 transition">Autenticar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Público del Producto (Checkout via WhatsApp) -->
+    <div id="productModal" class="fixed inset-0 z-50 glass-modal hidden flex flex-col justify-end sm:justify-center p-0 sm:p-4 transition-all">
+        <div class="bg-white w-full sm:max-w-md sm:mx-auto rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl relative max-h-[90vh] flex flex-col">
+            <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-black bg-opacity-50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-opacity-70 z-10">&times;</button>
+            
+            <div class="h-64 sm:h-80 w-full bg-gray-100 flex-shrink-0">
+                <img id="modal-img" src="" alt="Producto" class="w-full h-full object-cover">
+            </div>
+            
+            <div class="p-6 flex-1 overflow-y-auto">
+                <p id="modal-brand" class="text-sm font-bold text-gray-500 uppercase tracking-wide"></p>
+                <h2 id="modal-name" class="text-2xl font-bold text-gray-900 mt-1 mb-2"></h2>
+                <p id="modal-price" class="text-3xl font-extrabold text-black mb-6"></p>
+                
+                <h3 class="text-sm font-bold text-gray-900 uppercase mb-3">Selecciona tu talla:</h3>
+                <div id="modal-sizes" class="flex flex-wrap gap-2 mb-8">
+                    <!-- Botones de tallas inyectados aquí -->
+                </div>
+                
+                <button onclick="redirectToWhatsApp()" class="w-full bg-green-500 text-white font-bold text-lg py-4 rounded-xl flex justify-center items-center gap-2 hover:bg-green-600 shadow-lg shadow-green-200 transition-all">
+                    <!-- SVG de WhatsApp -->
+                    <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.128.555 4.195 1.611 6.012L.217 23.783l5.881-1.385c1.748.966 3.738 1.474 5.922 1.474 6.645 0 12.03-5.384 12.03-12.03S17.43 0 12.031 0zm7.135 17.194c-.302.846-1.748 1.62-2.392 1.67-.626.048-1.428.182-4.593-1.052-3.805-1.484-6.26-5.35-6.446-5.596-.182-.246-1.536-2.046-1.536-3.904 0-1.859.968-2.775 1.316-3.14.347-.367.754-.457 1.004-.457.25 0 .5.004.72.015.228.01.53.084.827.804.376.906 1.277 3.123 1.388 3.344.11.222.182.477.037.766-.145.292-.222.468-.442.723-.222.257-.468.56-.67.74-.216.19-.444.402-.2.812.245.41 1.09 1.785 2.342 2.903 1.616 1.442 2.96 1.884 3.376 2.078.415.195.66.155.908-.124.247-.28 1.066-1.243 1.35-1.67.284-.428.567-.356.945-.213.378.143 2.392 1.13 2.802 1.332.41.204.683.307.784.478.1.173.1.996-.202 1.842z"/></svg>
+                    Preguntar por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Lógico Completo de la Aplicación -->
+    <script>
+        // ==========================================
+        // 1. CONFIGURACIÓN DE SEGURIDAD Y SUPABASE
+        // ==========================================
+        // IMPORTANTE: Sustituye estas variables por las de tu proyecto Supabase.
+        const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
+        
+        // Número de WhatsApp (Incluye código de país, ej: 502 para Guatemala)
+        const WHATSAPP_NUMBER = '50200000000';
+
+        // Inicialización segura del cliente Supabase
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Variables de Estado Global
+        let allProducts = [];
+        let currentActiveProduct = null;
+        let selectedSize = null;
+
+        // ==========================================
+        // 2. CICLO DE VIDA Y SESIÓN DE USUARIO
+        // ==========================================
+        window.addEventListener('DOMContentLoaded', async () => {
+            await checkSession();
+            fetchProducts();
+
+            // Sincronización en tiempo real Global (Para que clientes vean los cambios al instante)
+            supabase.channel('custom-all-channel')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
+                    console.log('Cambio detectado en base de datos global:', payload);
+                    fetchProducts(); // Refresca lista ante cualquier inserción, actualización o borrado
+                })
+                .subscribe();
+        });
+
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            const btnAdmin = document.getElementById('btnAdminPanel');
+            if (session) {
+                btnAdmin.classList.remove('hidden');
+            } else {
+                btnAdmin.classList.add('hidden');
+                document.getElementById('admin-view').classList.add('hidden');
+                document.getElementById('public-view').classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // 3. LOGICA DE AUTENTICACIÓN (PANEL OCULTO)
+        // ==========================================
+        function openLoginModal() { document.getElementById('loginModal').classList.remove('hidden'); }
+        function closeLoginModal() { document.getElementById('loginModal').classList.add('hidden'); }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('authEmail').value;
+            const password = document.getElementById('authPassword').value;
+            const errorEl = document.getElementById('loginError');
+            
+            // Proceso cifrado al servidor de Auth, no expone credenciales localmente
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            
+            if (error) {
+                errorEl.textContent = 'Credenciales inválidas. Intente nuevamente.';
+                errorEl.classList.remove('hidden');
+            } else {
+                closeLoginModal();
+                checkSession();
+                toggleAdminPanel(); // Abre el panel de una vez
+            }
+        }
+
+        async function logout() {
+            await supabase.auth.signOut();
+            checkSession();
+        }
+
+        function toggleAdminPanel() {
+            const adminView = document.getElementById('admin-view');
+            const publicView = document.getElementById('public-view');
+            if(adminView.classList.contains('hidden')){
+                adminView.classList.remove('hidden');
+                publicView.classList.add('hidden');
+            } else {
+                adminView.classList.add('hidden');
+                publicView.classList.remove('hidden');
+            }
+        }
+
+        // ==========================================
+        // 4. LÓGICA DE PRODUCTOS E INVENTARIO
+        // ==========================================
+        async function fetchProducts() {
+            document.getElementById('loader').classList.remove('hidden');
+            
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            document.getElementById('loader').classList.add('hidden');
+
+            if (error) {
+                console.error('Error fetching products:', error);
+                return;
+            }
+            
+            allProducts = data || [];
+            renderProducts(allProducts);
+            renderAdminProducts(allProducts);
+        }
+
+        async function handleProductSubmit(e) {
+            e.preventDefault();
+            const btnSubmit = document.getElementById('btnSubmitProduct');
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = "Procesando...";
+
+            const id = document.getElementById('editProductId').value;
+            const brand = document.getElementById('p_brand').value;
+            const name = document.getElementById('p_name').value;
+            const price = parseFloat(document.getElementById('p_price').value);
+            const sizes = document.getElementById('p_sizes').value;
+            const imageFile = document.getElementById('p_image').files[0];
+
+            let image_url = "";
+
+            try {
+                // 4.1. Proceso de subida de imagen al CDN público
+                if (imageFile) {
+                    const fileExt = imageFile.name.split('.').pop();
+                    const fileName = `${Math.random()}.${fileExt}`;
+                    const filePath = `uploads/${fileName}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('productos')
+                        .upload(filePath, imageFile);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: { publicUrl } } = supabase.storage
+                        .from('productos')
+                        .getPublicUrl(filePath);
+                        
+                    image_url = publicUrl;
+                }
+
+                // 4.2. Inserción o Actualización en la BD
+                const productData = { brand, name, price, sizes };
+                if (image_url) productData.image_url = image_url; // Si subió nueva foto, actualiza url
+
+                if (id) {
+                    // Update
+                    const { error } = await supabase.from('products').update(productData).eq('id', id);
+                    if (error) throw error;
+                    alert('Producto actualizado con éxito');
+                } else {
+                    // Insert
+                    const { error } = await supabase.from('products').insert([productData]);
+                    if (error) throw error;
+                    alert('Producto subido con éxito a toda la red');
+                }
+
+                // Limpieza de formulario
+                document.getElementById('productForm').reset();
+                document.getElementById('editProductId').value = '';
+                document.getElementById('form-title').textContent = 'Agregar Nuevo Producto';
+                
+            } catch (error) {
+                alert('Error al guardar el producto: ' + error.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = "Guardar Producto";
+                // Los datos se refrescarán vía realtime de supabase, pero aseguramos la recarga:
+                fetchProducts(); 
+            }
+        }
+
+        async function deleteProduct(id) {
+            if(!confirm("¿Estás seguro de que quieres eliminar este producto globalmente?")) return;
+            
+            const { error } = await supabase.from('products').delete().eq('id', id);
+            if (error) alert("Error al eliminar: " + error.message);
+            else fetchProducts();
+        }
+
+        function editProductLocally(id) {
+            const prod = allProducts.find(p => p.id === id);
+            if(!prod) return;
+            document.getElementById('form-title').textContent = 'Editando: ' + prod.name;
+            document.getElementById('editProductId').value = prod.id;
+            document.getElementById('p_brand').value = prod.brand;
+            document.getElementById('p_name').value = prod.name;
+            document.getElementById('p_price').value = prod.price;
+            document.getElementById('p_sizes').value = prod.sizes;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ==========================================
+        // 5. INTERFAZ PÚBLICA (UI) & BUSCADOR
+        // ==========================================
+        function filterProducts() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) || p.brand.toLowerCase().includes(query)
+            );
+            renderProducts(filtered);
+        }
+
+        function renderProducts(products) {
+            const grid = document.getElementById('products-grid');
+            const empty = document.getElementById('empty-state');
+            grid.innerHTML = '';
+
+            if (products.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl shadow-sm hover:shadow-xl transition-shadow cursor-pointer overflow-hidden flex flex-col h-full border border-gray-100";
+                card.onclick = () => openProductModal(p);
+                
+                const imgUrl = p.image_url || 'https://via.placeholder.com/400x400?text=Sin+Foto';
+                
+                card.innerHTML = `
+                    <div class="h-48 md:h-56 bg-gray-100 overflow-hidden relative">
+                        <img src="${imgUrl}" alt="${p.name}" class="w-full h-full object-cover object-center hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-4 flex flex-col flex-1">
+                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">${p.brand}</p>
+                        <h3 class="text-sm md:text-base font-semibold text-gray-900 mt-1 flex-1 leading-tight">${p.name}</h3>                         <p class="text-lg font-black text-black mt-2">$${parseFloat(p.price).toFixed(2)}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderAdminProducts(products) {
+            const tbody = document.getElementById('admin-products-list');
+            tbody.innerHTML = '';
+            
+            products.forEach(p => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10Como Desarrollador Full-Stack y Especialista en Ciberseguridad, he estructurado esta solución siguiendo las mejores prácticas para aplicaciones de una sola página (SPA) sin servidor tradicional. 
+
+Para garantizar la seguridad de tu sistema:
+1. **Cero Credenciales Expuestas:** La autenticación se maneja exclusivamente a través del endpoint seguro de Supabase (`signInWithPassword`). No hay usuarios ni contraseñas en el código fuente.
+2. **Llave Anónima Segura:** La variable `SUPABASE_ANON_KEY` está diseñada para ser pública. Su seguridad real radica en configurar las **Políticas de Seguridad de Filas (RLS - Row Level Security)** en tu base de datos de Supabase. Debes configurar tu tabla de Supabase para que cualquiera pueda hacer `SELECT` (leer), pero solo los usuarios autenticados puedan hacer `INSERT`, `UPDATE` o `DELETE`.
+
+Aquí tienes el código completo. Solo necesitas guardarlo como `index.html` y reemplazar las variables de configuración en la sección de JavaScript con las de tu proyecto.
+
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store | Premium Imports</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+    <!-- Supabase JS CDN -->
+    <script src="[https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2](https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2)"></script>
+    <!-- Iconos -->
+    <link href="[https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css](https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css)" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        premium: '#0f172a', /* Slate 900 */
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Ocultar elementos de forma dinámica */
+        .hidden-el { display: none !important; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Estilos de botones de tallas */
+        .size-btn { border: 2px solid #e5e7eb; transition: all 0.2s; }
+        .size-btn.selected { border-color: #0f172a; background-color: #0f172a; color: white; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center font-bold text-xl tracking-tighter uppercase text-premium cursor-pointer" onclick="closeAdmin()">
+                    US<span class="text-gray-400">IMPORTS</span>
+                </div>
+                
+                <!-- Buscador -->
+                <div class="flex-1 max-w-lg mx-8 relative hidden sm:block">
+                    <input type="text" id="searchInput" placeholder="Buscar marca o producto..." 
+                        class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:border-premium focus:ring-1 focus:ring-premium text-sm transition-shadow">
+                    <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
+                </div>
+
+                <div>
+                    <button id="adminBtn" onclick="toggleAdminLogin()" class="text-gray-400 hover:text-premium transition-colors">
+                        <i class="fas fa-user-shield text-lg"></i>
+                    </button>
+                    <button id="logoutBtn" onclick="handleLogout()" class="hidden-el text-red-500 hover:text-red-700 font-semibold text-sm transition-colors">
+                        Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+            <!-- Buscador Móvil -->
+            <div class="pb-3 sm:hidden relative">
+                <input type="text" id="searchInputMobile" placeholder="Buscar marca o producto..." 
+                    class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:border-premium focus:ring-1 focus:ring-premium text-sm">
+                <i class="fas fa-search absolute left-4 top-3 text-gray-400 text-sm"></i>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Vista Pública: Grilla de Productos -->
+    <main id="publicView" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div id="loader" class="text-center py-20 text-gray-400 fade-in">
+            <i class="fas fa-circle-notch fa-spin text-3xl mb-3"></i>
+            <p>Cargando catálogo...</p>
+        </div>
+        <div id="productGrid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 fade-in hidden-el">
+            <!-- Productos renderizados por JS -->
+        </div>
+        <div id="noProductsMsg" class="text-center py-20 text-gray-500 hidden-el fade-in">
+            No se encontraron productos.
+        </div>
+    </main>
+
+    <!-- Modal de Producto & Checkout -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden-el flex items-end sm:items-center justify-center fade-in">
+        <div class="bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl overflow-hidden shadow-2xl">
+            <div class="relative">
+                <img id="modalImg" src="" alt="Producto" class="w-full h-64 sm:h-80 object-cover">
+                <button onclick="closeProductModal()" class="absolute top-4 right-4 bg-white rounded-full p-2 text-gray-600 shadow hover:bg-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p id="modalBrand" class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-1"></p>
+                <h2 id="modalName" class="text-2xl font-bold text-premium mb-2 leading-tight"></h2>
+                <p id="modalPrice" class="text-xl text-gray-900 font-semibold mb-6"></p>
+                
+                <div class="mb-6">
+                    <p class="text-sm text-gray-600 font-medium mb-3">Selecciona tu talla:</p>
+                    <div id="modalSizes" class="flex flex-wrap gap-2">
+                        <!-- Tallas renderizadas por JS -->
+                    </div>
+                </div>
+
+                <button onclick="buyWhatsApp()" class="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors shadow-lg">
+                    <i class="fab fa-whatsapp text-xl"></i>
+                    Preguntar por WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Login Administrador -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden-el flex items-center justify-center fade-in px-4">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 sm:p-8 relative">
+            <button onclick="toggleAdminLogin()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-lg"></i>
+            </button>
+            <h3 class="text-2xl font-bold text-premium mb-6 text-center">Acceso Privado</h3>
+            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Correo</label>
+                    <input type="email" id="email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-premium">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                    <input type="password" id="password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-premium">
+                </div>
+                <p id="loginError" class="text-red-500 text-sm hidden-el"></p>
+                <button type="submit" id="loginSubmit" class="w-full bg-premium text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors">
+                    Ingresar al Panel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vista de Administrador (Protegida) -->
+    <main id="adminView" class="max-w-4xl mx-auto px-4 sm:px-6 py-8 hidden-el fade-in">
+        <div class="flex items-center justify-between mb-8">
+            <h1 class="text-2xl font-bold text-premium">Gestión de Inventario</h1>
+        </div>
+
+        <!-- Formulario Agregar Producto -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+            <h2 class="text-lg font-bold text-gray-800 mb-4"><i class="fas fa-plus-circle mr-2 text-premium"></i>Nuevo Producto</h2>
+            <form id="productForm" onsubmit="handleAddProduct(event)" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Marca</label>
+                        <input type="text" id="addBrand" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-premium">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Modelo</label>
+                        <input type="text" id="addName" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-premium">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Precio (Ej: 1500.00)</label>
+                        <input type="number" step="0.01" id="addPrice" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-premium">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tallas (Separadas por comas)</label>
+                        <input type="text" id="addSizes" placeholder="S, M, L o 7, 8, 9, 10" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-premium">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Fotografía (Sube o usa la cámara)</label>
+                        <input type="file" id="addImage" accept="image/*" required class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-premium hover:file:bg-gray-100 cursor-pointer">
+                    </div>
+                </div>
+                <button type="submit" id="addProductBtn" class="w-full sm:w-auto px-6 py-2 bg-premium text-white rounded-lg font-bold hover:bg-gray-800 transition-colors">
+                    Subir al Catálogo Global
+                </button>
+            </form>
+        </div>
+
+        <!-- Lista de Inventario -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h2 class="text-lg font-bold text-gray-800">Catálogo Actual</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminProductList" class="bg-white divide-y divide-gray-200">
+                        <!-- Lista renderizada por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Principal -->
+    <script>
+        /* ==========================================
+           1. CONFIGURACIÓN DEL ENTORNO
+           ========================================== */
+        // REEMPLAZAR CON LOS DATOS DE TU PROYECTO SUPABASE
+        const SUPABASE_URL = '[https://TU-PROYECTO.supabase.co](https://TU-PROYECTO.supabase.co)';
+        const SUPABASE_ANON_KEY = 'TU-LLAVE-ANONIMA-AQUI';
+        
+        // CONFIGURACIÓN DE WHATSAPP (Código de país + Número sin espacios. Ej: 50212345678)
+        const WHATSAPP_NUMBER = '50200000000';
+        const CURRENCY_SYMBOL = 'Q'; // Símbolo de moneda local (Quetzal, Peso, Dólar, etc.)
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        /* Variables de Estado Global */
+        let products = [];
+        let currentSelectedProduct = null;
+        let selectedSize = null;
+        let session = null;
+
+        /* Referencias al DOM */
+        const publicView = document.getElementById('publicView');
+        const adminView = document.getElementById('adminView');
+        const adminBtn = document.getElementById('adminBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const productGrid = document.getElementById('productGrid');
+        const searchInput = document.getElementById('searchInput');
+        const searchInputMobile = document.getElementById('searchInputMobile');
+
+        /* ==========================================
+           2. INICIALIZACIÓN
+           ========================================== */
+        window.addEventListener('DOMContentLoaded', async () => {
+            // Verificar sesión activa
+            const { data: authData } = await supabase.auth.getSession();
+            session = authData.session;
+            toggleNavigation();
+
+            // Suscribirse a cambios de autenticación
+            supabase.auth.onAuthStateChange((event, newSession) => {
+                session = newSession;
+                toggleNavigation();
+            });
+
+            // Cargar productos
+            await fetchProducts();
+
+            // Suscribirse a cambios en tiempo real (Base de datos remota)
+            // Requiere activar Realtime en la tabla 'productos' en Supabase
+            supabase.channel('public:productos')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'productos' }, payload => {
+                    fetchProducts(); // Recarga simple al detectar cambios globales
+                })
+                .subscribe();
+            
+            // Eventos de búsqueda
+            searchInput.addEventListener('input', (e) => filterProducts(e.target.value));
+            searchInputMobile.addEventListener('input', (e) => filterProducts(e.target.value));
+        });
+
+        /* ==========================================
+           3. FUNCIONES DE AUTENTICACIÓN
+           ========================================== */
+        function toggleAdminLogin() {
+            const modal = document.getElementById('loginModal');
+            modal.classList.toggle('hidden-el');
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const errorMsg = document.getElementById('loginError');
+            const submitBtn = document.getElementById('loginSubmit');
+            
+            errorMsg.classList.add('hidden-el');
+            submitBtn.textContent = 'Verificando...';
+            submitBtn.disabled = true;
+
+            // Envío seguro de credenciales directamente al servidor Auth de Supabase
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorMsg.textContent = 'Credenciales incorrectas.';
+                errorMsg.classList.remove('hidden-el');
+            } else {
+                toggleAdminLogin();
+                document.getElementById('loginForm').reset();
+            }
+            
+            submitBtn.textContent = 'Ingresar al Panel';
+            submitBtn.disabled = false;
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            closeAdmin();
+        }
+
+        function toggleNavigation() {
+            if (session) {
+                adminBtn.classList.add('hidden-el');
+                logoutBtn.classList.remove('hidden-el');
+                publicView.classList.add('hidden-el');
+                adminView.classList.remove('hidden-el');
+                renderAdminList();
+            } else {
+                adminBtn.classList.remove('hidden-el');
+                logoutBtn.classList.add('hidden-el');
+                publicView.classList.remove('hidden-el');
+                adminView.classList.add('hidden-el');
+            }
+        }
+
+        function closeAdmin() {
+            if (session) handleLogout();
+        }
+
+        /* ==========================================
+           4. GESTIÓN DE PRODUCTOS (Lógica Core)
+           ========================================== */
+        async function fetchProducts() {
+            document.getElementById('loader').classList.remove('hidden-el');
+            
+            // Consultar tabla 'productos' (orden descendentemente por ID para ver los nuevos primero)
+            const { data, error } = await supabase
+                .from('productos')
+                .select('*')
+                .order('id', { ascending: false });
+
+            document.getElementById('loader').classList.add('hidden-el');
+
+            if (error) {
+                console.error("Error obteniendo productos:", error);
+                return;
+            }
+
+            products = data || [];
+            renderProducts(products);
+            if(session) renderAdminList();
+        }
+
+        function filterProducts(query) {
+            const q = query.toLowerCase();
+            const filtered = products.filter(p => 
+                p.nombre.toLowerCase().includes(q) || 
+                p.marca.toLowerCase().includes(q)
+            );
+            renderProducts(filtered);
+        }
+
+        /* ==========================================
+           5. RENDERIZADO UI (Pública)
+           ========================================== */
+        function renderProducts(items) {
+            productGrid.innerHTML = '';
+            const noMsg = document.getElementById('noProductsMsg');
+
+            if (items.length === 0) {
+                productGrid.classList.add('hidden-el');
+                noMsg.classList.remove('hidden-el');
+                return;
+            }
+
+            productGrid.classList.remove('hidden-el');
+            noMsg.classList.add('hidden-el');
+
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100 flex flex-col h-full';
+                card.onclick = () => openProductModal(item);
+                
+                card.innerHTML = `
+                    <div class="relative pt-[100%] w-full bg-gray-50">
+                        <img src="${item.imagen}" alt="${item.nombre}" class="absolute top-0 left-0 w-full h-full object-cover">
+                    </div>
+                    <div class="p-3 sm:p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                            <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 truncate">${item.marca}</p>
+                            <h3 class="font-semibold text-gray-900 text-sm sm:text-base leading-tight mb-2 line-clamp-2">${item.nombre}</h3>
+                        </div>
+                        <p class="font-bold text-premium text-base sm:text-lg">${CURRENCY_SYMBOL}${parseFloat(item.precio).toFixed(2)}</p>
+                    </div>
+                `;
+                productGrid.appendChild(card);
+            });
+        }
+
+        /* ==========================================
+           6. CHECKOUT Y MODAL (WhatsApp)
+           ========================================== */
+        function openProductModal(product) {
+            currentSelectedProduct = product;
+            selectedSize = null;
+            
+            document.getElementById('modalImg').src = product.imagen;
+            document.getElementById('modalBrand').textContent = product.marca;
+            document.getElementById('modalName').textContent = product.nombre;
+            document.getElementById('modalPrice').textContent = `${CURRENCY_SYMBOL}${parseFloat(product.precio).toFixed(2)}`;
+            
+            const sizesContainer = document.getElementById('modalSizes');
+            sizesContainer.innerHTML = '';
+            
+            // Procesar tallas separadas por coma
+            const tallasArray = product.tallas.split(',').map(t => t.trim()).filter(t => t);
+            
+            tallasArray.forEach(talla => {
+                const btn = document.createElement('button');
+                btn.className = 'size-btn px-4 py-2 rounded-lg font-medium text-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none';
+                btn.textContent = talla;
+                btn.onclick = () => selectSize(btn, talla);
+                sizesContainer.appendChild(btn);
+            });
+
+            document.getElementById('productModal').classList.remove('hidden-el');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.add('hidden-el');
+            currentSelectedProduct = null;
+        }
+
+        function selectSize(btnElement, size) {
+            selectedSize = size;
+            // Remover estado activo de todos los botones
+            const buttons = document.querySelectorAll('#modalSizes .size-btn');
+            buttons.forEach(b => b.classList.remove('selected'));
+            // Agregar activo al seleccionado
+            btnElement.classList.add('selected');
+        }
+
+        function buyWhatsApp() {
+            if (!currentSelectedProduct) return;
+            if (!selectedSize) {
+                alert("Por favor, selecciona una talla antes de continuar.");
+                return;
+            }
+
+            const formatTitle = `Hola, me interesa este artículo:`;
+            const formatData = `\n*Marca:* ${currentSelectedProduct.marca}\n*Modelo:* ${currentSelectedProduct.nombre}\n*Talla elegida:* ${selectedSize}\n*Precio:* ${CURRENCY_SYMBOL}${currentSelectedProduct.precio}`;
+            const formatImg = `\n*Foto:* ${currentSelectedProduct.imagen}`;
+            
+            const fullMessage = encodeURIComponent(`${formatTitle}${formatData}${formatImg}`);
+            window.open(`[https://wa.me/$](https://wa.me/$){WHATSAPP_NUMBER}?text=${fullMessage}`, '_blank');
+        }
+
+        /* ==========================================
+           7. PANEL DE ADMINISTRADOR (CRUD)
+           ========================================== */
+        async function handleAddProduct(e) {
+            e.preventDefault();
+            const btn = document.getElementById('addProductBtn');
+            btn.textContent = 'Subiendo...';
+            btn.disabled = true;
+
+            try {
+                // 1. Subir imagen al Storage
+                const fileInput = document.getElementById('addImage');
+                const file = fileInput.files[0];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
+                
+                // Nota: Asegúrate de tener un bucket llamado 'productos' que sea Público
+                const { error: uploadError } = await supabase.storage
+                    .from('productos')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                // 2. Obtener URL Pública
+                const { data: { publicUrl } } = supabase.storage
+                    .from('productos')
+                    .getPublicUrl(fileName);
+
+                // 3. Insertar en Base de Datos
+                const nuevoProducto = {
+                    marca: document.getElementById('addBrand').value.trim(),
+                    nombre: document.getElementById('addName').value.trim(),
+                    precio: parseFloat(document.getElementById('addPrice').value),
+                    tallas: document.getElementById('addSizes').value.trim(),
+                    imagen: publicUrl
+                };
+
+                const { error: insertError } = await supabase
+                    .from('productos')
+                    .insert([nuevoProducto]);
+
+                if (insertError) throw insertError;
+
+                // Éxito
+                document.getElementById('productForm').reset();
+                alert('Producto agregado exitosamente al catálogo global.');
+                await fetchProducts(); // Recargar
+
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ocurrió un error al subir el producto. Revisa la consola.');
+            } finally {
+                btn.textContent = 'Subir al Catálogo Global';
+                btn.disabled = false;
+            }
+        }
+
+        function renderAdminList() {
+            const tbody = document.getElementById('adminProductList');
+            tbody.innerHTML = '';
+
+            products.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="h-10 w-10 flex-shrink-0">
+                                <img class="h-10 w-10 rounded-md object-cover" src="${item.imagen}" alt="">
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">${item.nombre}</div>
+                                <div class="text-sm text-gray-500">${item.marca}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                        ${CURRENCY_SYMBOL}${parseFloat(item.precio).toFixed(2)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button onclick="handleDelete(${item.id})" class="text-red-600 hover:text-red-900 transition-colors p-2 bg-red-50 rounded-lg">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function handleDelete(id) {
+            if (!confirm('¿Estás seguro de eliminar este producto del sistema global?')) return;
+            
+            // Opcional: Podrías buscar la URL de la imagen y eliminarla del Storage también.
+            // Para mantenerlo simple, solo borramos el registro.
+            const { error } = await supabase
+                .from('productos')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                console.error("Error al eliminar:", error);
+                alert("Hubo un error al eliminar el producto.");
+            } else {
+                await fetchProducts(); // Recargar lista
+            }
+        }
+    </script>
+</body>
+</html>
+
+```
