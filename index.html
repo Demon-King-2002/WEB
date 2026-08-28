@@ -1,3 +1,14 @@
+Aquí tienes el código ajustado con los cambios solicitados:
+
+1. **Etiquetas Simplificadas**: Se reemplazó el texto por únicamente **Dama** y **Caballero** en filtros, fichas y formularios.
+2. **Botón "Nuevo Producto" Condicional**: El botón para agregar productos ya no aparece de inicio; se habilita únicamente cuando la administradora **inicia sesión**.
+3. **Botón de Iniciar Sesión Corregido**: Se reparó la función para abrir el modal de login de forma directa y confiable. Además, al iniciar sesión se añade la opción de cambiar de área/reingresar.
+
+---
+
+### 💻 Código Completo Actualizado (`index.html`)
+
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -45,7 +56,7 @@
       overflow-x: hidden;
     }
 
-    /* Ambient Decorative Glows */
+    /* Esferas de brillo decorativas */
     .glow-sphere-1 {
       position: fixed;
       top: -100px;
@@ -73,9 +84,9 @@
       100% { transform: translate(30px, 40px) scale(1.1); }
     }
 
-    /* Navbar Header */
+    /* Encabezado */
     header {
-      background: rgba(255, 255, 255, 0.75);
+      background: rgba(255, 255, 255, 0.8);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--glass-border);
@@ -140,12 +151,12 @@
     .user-badge {
       display: flex;
       align-items: center;
-      gap: 14px;
-      background: rgba(255, 255, 255, 0.9);
-      padding: 8px 16px;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 6px 16px;
       border-radius: 30px;
       border: 1px solid var(--glass-border);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
     }
 
     .user-avatar {
@@ -171,6 +182,20 @@
       font-size: 11px;
       color: var(--primary);
       font-weight: 600;
+    }
+
+    .btn-change-user {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 4px;
+      transition: color 0.2s;
+    }
+
+    .btn-change-user:hover {
+      color: var(--primary);
     }
 
     .btn-login-trigger {
@@ -201,7 +226,7 @@
       padding: 0 24px;
     }
 
-    /* Hero / Action Bar */
+    /* Hero Banner */
     .hero-banner {
       background: linear-gradient(135deg, rgba(255,20,147,0.85), rgba(123,44,191,0.9)), url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80');
       background-blend-mode: overlay;
@@ -243,7 +268,7 @@
       cursor: pointer;
       box-shadow: 0 8px 20px rgba(0,0,0,0.15);
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      display: flex;
+      display: none; /* Oculto por defecto hasta iniciar sesión */
       align-items: center;
       gap: 10px;
       white-space: nowrap;
@@ -255,7 +280,7 @@
       color: var(--primary-hover);
     }
 
-    /* Filtering & Navigation Tabs */
+    /* Filtros y Navegación */
     .filters-section {
       background: var(--card-bg);
       backdrop-filter: blur(12px);
@@ -378,7 +403,7 @@
       color: var(--text-muted);
     }
 
-    /* Product Grid & Cards */
+    /* Cards de Productos */
     .products-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
@@ -437,12 +462,12 @@
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .badge-mujer {
+    .badge-dama {
       background: rgba(255, 20, 147, 0.85);
       color: white;
     }
 
-    .badge-hombre {
+    .badge-caballero {
       background: rgba(123, 44, 191, 0.85);
       color: white;
     }
@@ -503,12 +528,6 @@
       font-size: 11px;
       font-weight: 700;
       border: 1px solid #E2D2E2;
-    }
-
-    .size-chip.highlight {
-      background: #FFE5EC;
-      color: var(--primary);
-      border-color: var(--primary);
     }
 
     .card-footer {
@@ -577,9 +596,9 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(30, 5, 32, 0.6);
+      background: rgba(30, 5, 32, 0.65);
       backdrop-filter: blur(8px);
-      z-index: 1000;
+      z-index: 2000;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -700,7 +719,7 @@
       transform: translateY(-2px);
     }
 
-    /* Empty state */
+    /* Estado vacío */
     .empty-state {
       text-align: center;
       padding: 60px 20px;
@@ -723,7 +742,7 @@
       margin-bottom: 8px;
     }
 
-    /* Notification Toast */
+    /* Toast Notification */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -738,7 +757,7 @@
       gap: 12px;
       font-size: 14px;
       font-weight: 700;
-      z-index: 2000;
+      z-index: 3000;
       transform: translateY(100px);
       opacity: 0;
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -765,7 +784,7 @@
     <div class="nav-container">
       <a href="#" class="logo-brand">
         <div class="logo-icon">
-          <i class="fa-solid me-bag-shopping"></i>
+          <i class="fa-solid fa-bag-shopping"></i>
         </div>
         <div class="logo-text">
           <h1>Chic Boutique</h1>
@@ -774,7 +793,7 @@
       </a>
 
       <div id="userBadgeArea">
-        <button class="btn-login-trigger" onclick="openLoginModal()">
+        <button id="btnLoginTrigger" class="btn-login-trigger" type="button" onclick="openLoginModal()">
           <i class="fa-solid fa-user-gear"></i> Asignar Área / Login
         </button>
       </div>
@@ -790,7 +809,8 @@
         <h2>Catálogo de Moda & Inventario</h2>
         <p>Administración general de Calzado, Playeras, Pantalones y Accesorios de Dama y Caballero.</p>
       </div>
-      <button class="btn-add-product" onclick="openProductModal()">
+      <!-- Se muestra dinámicamente solo tras iniciar sesión -->
+      <button id="btnAddProduct" class="btn-add-product" onclick="openProductModal()">
         <i class="fa-solid fa-plus-circle"></i> Nuevo Producto
       </button>
     </div>
@@ -818,8 +838,8 @@
       <div class="subfilters-bar">
         <div class="gender-toggle">
           <button class="gender-btn active" onclick="filterGender('todos', this)">Todos</button>
-          <button class="gender-btn" onclick="filterGender('mujer', this)">👩 Dama / Mujer</button>
-          <button class="gender-btn" onclick="filterGender('hombre', this)">👨 Caballero / Hombre</button>
+          <button class="gender-btn" onclick="filterGender('dama', this)">👩 Dama</button>
+          <button class="gender-btn" onclick="filterGender('caballero', this)">👨 Caballero</button>
         </div>
 
         <div class="search-box">
@@ -831,7 +851,7 @@
 
     <!-- Product Grid -->
     <div class="products-grid" id="productsGrid">
-      <!-- Generated via JavaScript -->
+      <!-- Generado mediante JavaScript -->
     </div>
 
   </main>
@@ -844,7 +864,7 @@
           <i class="fa-solid fa-box-open" style="color: var(--primary);"></i>
           <span>Ingresar Producto</span>
         </div>
-        <button class="btn-close-modal" onclick="closeProductModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close-modal" type="button" onclick="closeProductModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="productForm" onsubmit="saveProduct(event)">
@@ -852,13 +872,13 @@
 
         <div class="form-group">
           <label for="prodName">Nombre del Producto</label>
-          <input type="text" class="form-control" id="prodName" placeholder="Ej: Zapato Tacón Rosa Velvet / Playera Slim" required>
+          <input type="text" class="form-control" id="prodName" placeholder="Ej: Tacón Velvet Rosa / Playera Slim Fit" required>
         </div>
 
         <div class="form-row">
           <div class="form-group">
             <label for="prodCategory">Categoría</label>
-            <select class="form-control" id="prodCategory" required onchange="updateSubcatOptions()">
+            <select class="form-control" id="prodCategory" required>
               <option value="zapatos">Zapatos</option>
               <option value="playeras_camisas">Playeras y Camisas</option>
               <option value="pantalones">Pantalones</option>
@@ -867,10 +887,10 @@
           </div>
 
           <div class="form-group">
-            <label for="prodGender">Sección / Género</label>
+            <label for="prodGender">Sección / Área</label>
             <select class="form-control" id="prodGender" required>
-              <option value="mujer">Mujer / Dama</option>
-              <option value="hombre">Hombre / Caballero</option>
+              <option value="dama">Dama</option>
+              <option value="caballero">Caballero</option>
               <option value="unisex">Unisex</option>
             </select>
           </div>
@@ -890,7 +910,7 @@
 
         <div class="form-group">
           <label for="prodSizes">Tallas Disponibles (Separadas por comas)</label>
-          <input type="text" class="form-control" id="prodSizes" placeholder="Ej: 35, 36, 37, 38 o S, M, L, XL" required>
+          <input type="text" class="form-control" id="prodSizes" placeholder="Ej: 35, 36, 37 o S, M, L" required>
         </div>
 
         <div class="form-group">
@@ -913,7 +933,7 @@
           <i class="fa-solid fa-user-shield" style="color: var(--secondary);"></i>
           <span>Ingreso de Administradora</span>
         </div>
-        <button class="btn-close-modal" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
+        <button class="btn-close-modal" type="button" onclick="closeLoginModal()"><i class="fa-solid fa-xmark"></i></button>
       </div>
 
       <form id="loginForm" onsubmit="handleLogin(event)">
@@ -926,9 +946,10 @@
           <label for="loginArea">Área Asignada a Gestionar</label>
           <select class="form-control" id="loginArea" required>
             <option value="Administración General">Administración General</option>
-            <option value="Calzado Femenino (Zapatos Dama)">Calzado Femenino (Zapatos Dama)</option>
-            <option value="Calzado Masculino (Zapatos Hombre)">Calzado Masculino (Zapatos Hombre)</option>
-            <option value="Ropa & Playeras Dama/Caballero">Ropa & Playeras Dama/Caballero</option>
+            <option value="Calzado Dama">Calzado Dama</option>
+            <option value="Calzado Caballero">Calzado Caballero</option>
+            <option value="Ropa Dama">Ropa Dama</option>
+            <option value="Ropa Caballero">Ropa Caballero</option>
             <option value="Carteras & Accesorios Dama">Carteras & Accesorios Dama</option>
           </select>
         </div>
@@ -951,7 +972,7 @@
     <span id="toastText">Operación realizada con éxito</span>
   </div>
 
-  <!-- Application Logic -->
+  <!-- Lógica de JavaScript -->
   <script>
     // Supabase Configuration
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
@@ -962,13 +983,13 @@
       supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
 
-    // Default Initial State / Demo Backup Data
+    // Datos iniciales de demostración
     let productsList = [
       {
         id: '1',
         nombre: 'Tacón Stiletto Velvet Rose',
         categoria: 'zapatos',
-        genero: 'mujer',
+        genero: 'dama',
         precio: 345.00,
         stock: 12,
         tallas: ['35', '36', '37', '38'],
@@ -978,7 +999,7 @@
         id: '2',
         nombre: 'Mocasines Elegantes de Cuero',
         categoria: 'zapatos',
-        genero: 'hombre',
+        genero: 'caballero',
         precio: 450.00,
         stock: 8,
         tallas: ['39', '40', '41', '42'],
@@ -988,7 +1009,7 @@
         id: '3',
         nombre: 'Playera Casual Cotton Chic',
         categoria: 'playeras_camisas',
-        genero: 'mujer',
+        genero: 'dama',
         precio: 125.00,
         stock: 20,
         tallas: ['S', 'M', 'L'],
@@ -998,7 +1019,7 @@
         id: '4',
         nombre: 'Bolso de Mano Elegante Coral',
         categoria: 'accesorios_bolsas',
-        genero: 'mujer',
+        genero: 'dama',
         precio: 295.00,
         stock: 5,
         tallas: ['Única'],
@@ -1008,7 +1029,7 @@
         id: '5',
         nombre: 'Pantalón Jeans High Waist',
         categoria: 'pantalones',
-        genero: 'mujer',
+        genero: 'dama',
         precio: 220.00,
         stock: 15,
         tallas: ['28', '30', '32'],
@@ -1020,12 +1041,12 @@
     let currentGender = 'todos';
     let currentUser = null;
 
-    // Initialization
+    // Inicialización
     document.addEventListener('DOMContentLoaded', () => {
       loadProductsFromSupabase();
     });
 
-    // Fetch Products from Supabase or Fallback
+    // Cargar Productos desde Supabase o Modo Local
     async function loadProductsFromSupabase() {
       if (supabase) {
         try {
@@ -1043,7 +1064,7 @@
       renderProducts();
     }
 
-    // Render Grid
+    // Renderizar Productos
     function renderProducts() {
       const grid = document.getElementById('productsGrid');
       const searchVal = document.getElementById('searchInput').value.toLowerCase();
@@ -1071,8 +1092,8 @@
       }
 
       grid.innerHTML = filtered.map(p => {
-        const genderLabel = p.genero === 'mujer' ? 'Dama' : (p.genero === 'hombre' ? 'Caballero' : 'Unisex');
-        const badgeClass = p.genero === 'mujer' ? 'badge-mujer' : (p.genero === 'hombre' ? 'badge-hombre' : 'badge-unisex');
+        const genderLabel = p.genero === 'dama' ? 'Dama' : (p.genero === 'caballero' ? 'Caballero' : 'Unisex');
+        const badgeClass = p.genero === 'dama' ? 'badge-dama' : (p.genero === 'caballero' ? 'badge-caballero' : 'badge-unisex');
         const tallasArr = Array.isArray(p.tallas) ? p.tallas : p.tallas.split(',');
         const imgUrl = p.imagen_url || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80';
 
@@ -1109,7 +1130,7 @@
       }).join('');
     }
 
-    // Category Filtering
+    // Filtrar por Categoría
     function filterCategory(cat, btn) {
       currentCategory = cat;
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -1117,7 +1138,7 @@
       renderProducts();
     }
 
-    // Gender Filtering
+    // Filtrar por Género
     function filterGender(gender, btn) {
       currentGender = gender;
       document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('active'));
@@ -1125,12 +1146,12 @@
       renderProducts();
     }
 
-    // Search Trigger
+    // Búsqueda
     function handleSearch() {
       renderProducts();
     }
 
-    // Product Modals
+    // Modal de Productos
     function openProductModal(prod = null) {
       const modal = document.getElementById('productModal');
       const form = document.getElementById('productForm');
@@ -1158,7 +1179,7 @@
       document.getElementById('productModal').classList.remove('active');
     }
 
-    // Save Product
+    // Guardar Producto
     async function saveProduct(e) {
       e.preventDefault();
       
@@ -1182,7 +1203,6 @@
       };
 
       if (id) {
-        // Edit existing
         const index = productsList.findIndex(p => p.id === id);
         if (index !== -1) {
           productsList[index] = { ...productsList[index], ...productPayload };
@@ -1192,7 +1212,6 @@
         }
         showToast('Producto actualizado correctamente');
       } else {
-        // Create new
         const newId = Date.now().toString();
         const newProd = { id: newId, ...productPayload };
         productsList.unshift(newProd);
@@ -1207,13 +1226,13 @@
       renderProducts();
     }
 
-    // Edit Item
+    // Editar
     function editProduct(id) {
       const prod = productsList.find(p => p.id === id);
       if (prod) openProductModal(prod);
     }
 
-    // Delete Item
+    // Eliminar
     async function deleteProduct(id) {
       if (confirm('¿Estás segura de eliminar este producto del inventario?')) {
         productsList = productsList.filter(p => p.id !== id);
@@ -1225,13 +1244,19 @@
       }
     }
 
-    // User Login Modal
+    // Funciones de Login y Control de Modal
     function openLoginModal() {
-      document.getElementById('loginModal').classList.add('active');
+      const loginModal = document.getElementById('loginModal');
+      if (loginModal) {
+        loginModal.classList.add('active');
+      }
     }
 
     function closeLoginModal() {
-      document.getElementById('loginModal').classList.remove('active');
+      const loginModal = document.getElementById('loginModal');
+      if (loginModal) {
+        loginModal.classList.remove('active');
+      }
     }
 
     function handleLogin(e) {
@@ -1242,6 +1267,7 @@
 
       currentUser = { name, area, sizeRef };
 
+      // Actualiza la barra superior con los datos de usuario y botón de cambio
       document.getElementById('userBadgeArea').innerHTML = `
         <div class="user-badge">
           <div class="user-avatar">${name.charAt(0).toUpperCase()}</div>
@@ -1249,14 +1275,23 @@
             <p>${name}</p>
             <span><i class="fa-solid fa-location-dot"></i> ${area} ${sizeRef ? `(${sizeRef})` : ''}</span>
           </div>
+          <button class="btn-change-user" onclick="openLoginModal()" title="Cambiar de Área / Login">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
       `;
 
+      // Habilita el botón de Nuevo Producto
+      const btnAdd = document.getElementById('btnAddProduct');
+      if (btnAdd) {
+        btnAdd.style.display = 'flex';
+      }
+
       closeLoginModal();
-      showToast(`¡Bienvenida ${name}! Área asignada: ${area}`);
+      showToast(`¡Bienvenida ${name}! Sesión iniciada en ${area}`);
     }
 
-    // Notification Helper
+    // Helper Notificaciones
     function showToast(msg) {
       const toast = document.getElementById('toastMsg');
       document.getElementById('toastText').innerText = msg;
