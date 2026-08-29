@@ -11,17 +11,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    div[class*="netlify"], #netlify-badge, [id*="netlify"], [class*="netlify-badge"], iframe[src*="netlify"],
-    body > div:last-child:not(.modal-overlay):not(.toast),
-    a[href*="netlify"], div[style*="z-index: 99999"], div[style*="position: fixed"][style*="bottom"] { 
-      display: none !important; 
-      pointer-events: none !important; 
-      visibility: hidden !important; 
-      opacity: 0 !important;
-      width: 0 !important;
-      height: 0 !important;
-    }
-
     :root {
       --primary: #FF1493;
       --primary-hover: #E0007A;
@@ -268,6 +257,15 @@
       line-height: 1.5;
     }
 
+    .admin-actions-group {
+      display: none;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      position: relative;
+      z-index: 2;
+    }
+
     .btn-add-product {
       background: #FFFFFF;
       color: var(--primary);
@@ -289,6 +287,30 @@
       transform: scale(1.05) translateY(-2px);
       background: #FFF0F6;
       color: var(--primary-hover);
+    }
+
+    .btn-admin-secondary {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFFFFF;
+      border: 1.5px solid rgba(255, 255, 255, 0.65);
+      padding: 14px 22px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+    }
+
+    .btn-admin-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.05) translateY(-2px);
+    }
     }
 
     .filters-section {
@@ -863,7 +885,7 @@
 
       <div id="userBadgeArea">
         <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
-          <i class="fa-solid fa-user-gear"></i>
+          <i class="fa-solid fa-crown"></i>
         </button>
       </div>
     </div>
@@ -878,6 +900,17 @@
       <button id="btnAddProduct" class="btn-add-product" type="button">
         <i class="fa-solid fa-plus-circle"></i> Nuevo Producto
       </button>
+      <div class="admin-actions-group" id="adminActionsGroup">
+        <button id="btnInventario" class="btn-admin-secondary" type="button">
+          <i class="fa-solid fa-warehouse"></i> Inventario
+        </button>
+        <button id="btnSalidaProducto" class="btn-admin-secondary" type="button">
+          <i class="fa-solid fa-truck-ramp-box"></i> Salida de Producto
+        </button>
+        <button id="btnAdministracion" class="btn-admin-secondary" type="button">
+          <i class="fa-solid fa-chart-line"></i> Administración
+        </button>
+      </div>
     </div>
 
     <div class="filters-section">
@@ -892,10 +925,10 @@
           <i class="fa-solid fa-shirt"></i> Playeras y Camisas
         </button>
         <button class="tab-btn" data-category="pantalones" type="button">
-          <i class="fa-solid fa-scissors"></i> Pantalones
+          <i class="fa-solid fa-vest"></i> Pantalones
         </button>
         <button class="tab-btn" data-category="accesorios_bolsas" type="button">
-          <i class="fa-solid fa-bag-shopping"></i> Accesorios & Bolsas
+          <i class="fa-solid fa-bag-shopping"></i> Accesorios
         </button>
       </div>
 
@@ -942,7 +975,7 @@
               <option value="zapatos">Zapatos</option>
               <option value="playeras_camisas">Playeras y Camisas</option>
               <option value="pantalones">Pantalones</option>
-              <option value="accesorios_bolsas">Accesorios & Bolsas</option>
+              <option value="accesorios_bolsas">Accesorios</option>
             </select>
           </div>
 
@@ -958,10 +991,17 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label for="prodPrice">Precio (Quetzales Q)</label>
+            <label for="prodPrice">Precio de Venta (Quetzales Q)</label>
             <input type="number" step="0.01" class="form-control" id="prodPrice" placeholder="Q 150.00" required>
           </div>
 
+          <div class="form-group">
+            <label for="prodCost">Costo del Producto (Q)</label>
+            <input type="number" step="0.01" class="form-control" id="prodCost" placeholder="Q 80.00">
+          </div>
+        </div>
+
+        <div class="form-row">
           <div class="form-group">
             <label for="prodStock">Existencias (Stock)</label>
             <input type="number" class="form-control" id="prodStock" placeholder="10" required>
@@ -1009,6 +1049,51 @@
 
         <button type="submit" class="btn-submit">
           <i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión para Gestionar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="salidaModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-truck-ramp-box" style="color: var(--secondary);"></i>
+          <span>Registrar Salida de Producto</span>
+        </div>
+        <button class="btn-close-modal btn-close-salida-modal" type="button"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form id="salidaForm">
+        <div class="form-group">
+          <label for="salidaProducto">Producto</label>
+          <select class="form-control" id="salidaProducto" required></select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="salidaCantidad">Cantidad</label>
+            <input type="number" min="1" class="form-control" id="salidaCantidad" value="1" required>
+          </div>
+
+          <div class="form-group">
+            <label for="salidaMotivo">Motivo</label>
+            <select class="form-control" id="salidaMotivo" required>
+              <option value="venta">Venta</option>
+              <option value="dañado">Producto dañado</option>
+              <option value="perdida">Pérdida / Extravío</option>
+              <option value="ajuste">Ajuste de inventario</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" id="salidaResumenWrapper" style="display:none;">
+          <small style="color: var(--text-muted); display:block;">Stock actual: <b id="salidaStockActual">-</b> | Ingreso estimado: <b id="salidaIngresoEstimado">Q0.00</b></small>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmitSalida">
+          <i class="fa-solid fa-check"></i> Registrar Salida
         </button>
       </form>
     </div>
@@ -1075,6 +1160,9 @@
       document.querySelectorAll('.btn-close-prod-modal').forEach(btn => {
         btn.addEventListener('click', closeProductModal);
       });
+      document.querySelectorAll('.btn-close-salida-modal').forEach(btn => {
+        btn.addEventListener('click', closeSalidaModal);
+      });
 
       const loginModalEl = document.getElementById('loginModal');
       if (loginModalEl) {
@@ -1090,9 +1178,46 @@
         });
       }
 
+      const salidaModalEl = document.getElementById('salidaModal');
+      if (salidaModalEl) {
+        salidaModalEl.addEventListener('click', (e) => {
+          if (e.target === salidaModalEl) closeSalidaModal();
+        });
+      }
+
+      const salidaForm = document.getElementById('salidaForm');
+      if (salidaForm) {
+        salidaForm.addEventListener('submit', registrarSalida);
+      }
+
+      const salidaProductoSelect = document.getElementById('salidaProducto');
+      if (salidaProductoSelect) {
+        salidaProductoSelect.addEventListener('change', actualizarResumenSalida);
+      }
+
+      const salidaCantidadInput = document.getElementById('salidaCantidad');
+      if (salidaCantidadInput) {
+        salidaCantidadInput.addEventListener('input', actualizarResumenSalida);
+      }
+
       const btnAddProduct = document.getElementById('btnAddProduct');
       if (btnAddProduct) {
         btnAddProduct.addEventListener('click', () => openProductModal());
+      }
+
+      const btnInventario = document.getElementById('btnInventario');
+      if (btnInventario) {
+        btnInventario.addEventListener('click', () => { window.location.href = 'inventario.html'; });
+      }
+
+      const btnSalidaProducto = document.getElementById('btnSalidaProducto');
+      if (btnSalidaProducto) {
+        btnSalidaProducto.addEventListener('click', () => openSalidaModal());
+      }
+
+      const btnAdministracion = document.getElementById('btnAdministracion');
+      if (btnAdministracion) {
+        btnAdministracion.addEventListener('click', () => { window.location.href = 'administracion.html'; });
       }
 
       document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -1204,6 +1329,7 @@
         document.getElementById('prodCategory').value = prod.categoria;
         document.getElementById('prodGender').value = prod.genero;
         document.getElementById('prodPrice').value = prod.precio;
+        document.getElementById('prodCost').value = prod.costo || '';
         document.getElementById('prodStock').value = prod.stock;
         document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
         document.getElementById('prodImgUrl').value = prod.imagen_url || '';
@@ -1224,6 +1350,110 @@
       if (modal) {
         modal.classList.remove('active');
         setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    function openSalidaModal() {
+      const modal = document.getElementById('salidaModal');
+      const select = document.getElementById('salidaProducto');
+      if (!modal || !select) return;
+
+      select.innerHTML = productsList.map(p =>
+        `<option value="${p.id}">${p.nombre} (Stock: ${p.stock})</option>`
+      ).join('');
+
+      document.getElementById('salidaCantidad').value = 1;
+      document.getElementById('salidaMotivo').value = 'venta';
+      actualizarResumenSalida();
+
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('active'), 10);
+    }
+
+    function closeSalidaModal() {
+      const modal = document.getElementById('salidaModal');
+      if (modal) {
+        modal.classList.remove('active');
+        setTimeout(() => modal.style.display = 'none', 200);
+      }
+    }
+
+    function actualizarResumenSalida() {
+      const select = document.getElementById('salidaProducto');
+      const cantidadInput = document.getElementById('salidaCantidad');
+      const wrapper = document.getElementById('salidaResumenWrapper');
+      if (!select || !select.value) {
+        if (wrapper) wrapper.style.display = 'none';
+        return;
+      }
+
+      const prod = productsList.find(p => p.id === select.value);
+      if (!prod) {
+        if (wrapper) wrapper.style.display = 'none';
+        return;
+      }
+
+      const cantidad = parseInt(cantidadInput.value) || 0;
+      document.getElementById('salidaStockActual').textContent = prod.stock;
+      document.getElementById('salidaIngresoEstimado').textContent = 'Q' + formatNumber(prod.precio * cantidad);
+      wrapper.style.display = 'block';
+    }
+
+    async function registrarSalida(event) {
+      event.preventDefault();
+
+      const select = document.getElementById('salidaProducto');
+      const cantidad = parseInt(document.getElementById('salidaCantidad').value);
+      const motivo = document.getElementById('salidaMotivo').value;
+      const prod = productsList.find(p => p.id === select.value);
+
+      if (!prod) {
+        alert('Selecciona un producto válido.');
+        return;
+      }
+
+      if (!cantidad || cantidad < 1) {
+        alert('La cantidad debe ser mayor a 0.');
+        return;
+      }
+
+      if (cantidad > prod.stock) {
+        alert(`No hay suficiente stock. Disponible: ${prod.stock}`);
+        return;
+      }
+
+      const btnSubmit = document.getElementById('btnSubmitSalida');
+      const originalText = btnSubmit.innerHTML;
+      btnSubmit.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Registrando...';
+      btnSubmit.disabled = true;
+
+      const nuevoStock = prod.stock - cantidad;
+
+      try {
+        if (supabaseClient) {
+          const { error: ventaError } = await supabaseClient.from('ventas').insert([{
+            producto_id: prod.id,
+            producto_nombre: prod.nombre,
+            cantidad: cantidad,
+            precio_unitario: prod.precio,
+            costo_unitario: prod.costo || 0,
+            motivo: motivo
+          }]);
+          if (ventaError) throw ventaError;
+
+          const { error: stockError } = await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
+          if (stockError) throw stockError;
+        }
+
+        prod.stock = nuevoStock;
+        closeSalidaModal();
+        renderProducts();
+        showToast('Salida registrada correctamente', false);
+      } catch (err) {
+        alert('Error al registrar la salida: ' + err.message);
+      } finally {
+        btnSubmit.innerHTML = originalText;
+        btnSubmit.disabled = false;
       }
     }
 
@@ -1291,7 +1521,7 @@
             </div>
             
             <div class="card-body">
-              <span class="category-tag">${p.categoria.replace('_', ' & ')}</span>
+              <span class="category-tag">${p.categoria === 'accesorios_bolsas' ? 'Accesorios' : p.categoria.replace('_', ' & ')}</span>
               <h3 class="product-title">${p.nombre}</h3>
               
               <div class="sizes-container">
@@ -1301,7 +1531,7 @@
               <div class="card-footer">
                 <div class="price-tag"><span>Q</span>${formatNumber(p.precio)}</div>
                 
-                <a href="https://api.whatsapp.com/send?phone=&text=${encodeURIComponent(whatsappMsg)}" target="_blank" class="btn-whatsapp">
+                <a href="https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodeURIComponent(whatsappMsg)}" target="_blank" class="btn-whatsapp">
                   <i class="fa-brands fa-whatsapp"></i> Lo quiero
                 </a>
 
@@ -1333,6 +1563,7 @@
         const categoria = document.getElementById('prodCategory').value;
         const genero = document.getElementById('prodGender').value;
         const precio = parseFloat(document.getElementById('prodPrice').value);
+        const costo = parseFloat(document.getElementById('prodCost').value) || 0;
         const stock = parseInt(document.getElementById('prodStock').value);
         const tallas = document.getElementById('prodSizes').value.split(',').map(s => s.trim());
         
@@ -1357,7 +1588,7 @@
           imagen_url = publicUrlData.publicUrl;
         }
 
-        const productPayload = { nombre, categoria, genero, precio, stock, tallas, imagen_url };
+        const productPayload = { nombre, categoria, genero, precio, costo, stock, tallas, imagen_url };
 
         if (id) {
           const index = productsList.findIndex(p => p.id === id);
@@ -1431,6 +1662,9 @@
       
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'flex';
+
+      const adminGroup = document.getElementById('adminActionsGroup');
+      if (adminGroup) adminGroup.style.display = 'flex';
       
       renderProducts();
     }
@@ -1443,12 +1677,15 @@
       
       document.getElementById('userBadgeArea').innerHTML = `
         <button id="btnLoginTrigger" class="btn-login-icon" type="button" title="Acceso de Gestión">
-          <i class="fa-solid fa-user-gear"></i>
+          <i class="fa-solid fa-crown"></i>
         </button>
       `;
 
       const btnAdd = document.getElementById('btnAddProduct');
       if (btnAdd) btnAdd.style.display = 'none';
+
+      const adminGroup = document.getElementById('adminActionsGroup');
+      if (adminGroup) adminGroup.style.display = 'none';
 
       renderProducts();
       showToast('Sesión cerrada correctamente', false);

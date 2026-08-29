@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Administración - Boutique</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --primary: #FF1493;
+      --primary-hover: #E0007A;
+      --secondary: #7B2CBF;
+      --bg-gradient: linear-gradient(135deg, #FFF0F6 0%, #F3E8FF 50%, #FFE5EC 100%);
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --glass-border: rgba(255, 255, 255, 0.6);
+      --text-dark: #2A082C;
+      --text-muted: #6C5268;
+      --shadow-vivid: 0 12px 35px -8px rgba(255, 20, 147, 0.22);
+      --radius: 20px;
+      --good: #00A876;
+      --bad: #FF3B3B;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+    body {
+      background: var(--bg-gradient);
+      background-attachment: fixed;
+      color: var(--text-dark);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    header {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.05);
+    }
+
+    .nav-container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .back-link {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text-dark);
+      font-weight: 700; font-size: 15px;
+    }
+    .back-link i { color: var(--primary); }
+
+    .page-title-badge {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 18px;
+    }
+    .page-title-badge i {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 18px;
+    }
+
+    .btn-logout-small {
+      background: #F4E8F4; border: none; color: var(--text-dark);
+      cursor: pointer; font-size: 13px; padding: 10px 16px;
+      border-radius: 30px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    .main-wrapper { max-width: 1300px; margin: 30px auto; padding: 0 16px; }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow-vivid);
+    }
+    .summary-card span { font-size: 13px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px; }
+    .summary-card b { font-size: 24px; font-weight: 800; }
+    .summary-card.income b { color: var(--good); }
+    .summary-card.expense b { color: var(--bad); }
+    .summary-card.profit b { color: var(--primary); }
+
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-vivid);
+    }
+
+    .section-title {
+      font-size: 17px; font-weight: 800; margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title i { color: var(--primary); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+    th { padding: 12px 14px; text-align: left; font-weight: 700; white-space: nowrap; }
+    td { padding: 10px 14px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    tbody tr:hover { background: rgba(255, 20, 147, 0.04); }
+
+    .positive { color: var(--good); font-weight: 700; }
+    .negative { color: var(--bad); font-weight: 700; }
+
+    .gasto-form {
+      display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    .gasto-form .form-group { flex: 1; min-width: 160px; }
+    .gasto-form label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 6px; color: var(--text-muted); }
+    .gasto-form input, .gasto-form select {
+      width: 100%; padding: 10px 14px; border-radius: 12px;
+      border: 1.5px solid rgba(0,0,0,0.08); font-size: 14px; outline: none;
+    }
+    .btn-add-gasto {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white; border: none; padding: 12px 22px;
+      border-radius: 12px; font-weight: 700; cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .loading-state, .empty-state {
+      text-align: center; padding: 40px 20px; color: var(--text-muted);
+    }
+    .loading-state i { font-size: 28px; margin-bottom: 10px; display: block; color: var(--primary); }
+
+    @media (max-width: 700px) {
+      table { font-size: 12px; }
+      th, td { padding: 8px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="index.html" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
+      </a>
+      <div class="page-title-badge">
+        <i class="fa-solid fa-chart-line"></i> Administración
+      </div>
+      <button class="btn-logout-small" id="btnLogoutAdmin" type="button">
+        <i class="fa-solid fa-power-off"></i> Cerrar Sesión
+      </button>
+    </div>
+  </header>
+
+  <main class="main-wrapper">
+    <div id="loadingState" class="loading-state">
+      <i class="fa-solid fa-spinner fa-spin"></i> Cargando información financiera...
+    </div>
+
+    <div id="contentWrapper" style="display:none;">
+      <div class="summary-grid">
+        <div class="summary-card income">
+          <span>Ingresos totales (ventas)</span>
+          <b id="sumIngresos">Q0.00</b>
+        </div>
+        <div class="summary-card">
+          <span>Costo de mercancía vendida</span>
+          <b id="sumCostoVentas">Q0.00</b>
+        </div>
+        <div class="summary-card profit">
+          <span>Utilidad bruta</span>
+          <b id="sumUtilidadBruta">Q0.00</b>
+        </div>
+        <div class="summary-card expense">
+          <span>Gastos totales</span>
+          <b id="sumGastos">Q0.00</b>
+        </div>
+        <div class="summary-card profit">
+          <span>Utilidad neta</span>
+          <b id="sumUtilidadNeta">Q0.00</b>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-ranking-star"></i> Rentabilidad por Producto</div>
+        <div id="rentabilidadWrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th>Unidades Vendidas</th>
+                <th>Ingreso Generado</th>
+                <th>Costo Total</th>
+                <th>Utilidad</th>
+                <th>Margen</th>
+              </tr>
+            </thead>
+            <tbody id="rentabilidadBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-sack-dollar"></i> Registrar Gasto</div>
+        <form class="gasto-form" id="gastoForm">
+          <div class="form-group">
+            <label for="gastoConcepto">Concepto</label>
+            <input type="text" id="gastoConcepto" placeholder="Ej: Alquiler del local" required>
+          </div>
+          <div class="form-group">
+            <label for="gastoMonto">Monto (Q)</label>
+            <input type="number" step="0.01" id="gastoMonto" placeholder="500.00" required>
+          </div>
+          <div class="form-group">
+            <label for="gastoCategoria">Categoría</label>
+            <select id="gastoCategoria">
+              <option value="operativo">Operativo</option>
+              <option value="renta">Renta</option>
+              <option value="servicios">Servicios</option>
+              <option value="marketing">Marketing</option>
+              <option value="insumos">Insumos</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-add-gasto"><i class="fa-solid fa-plus"></i> Agregar Gasto</button>
+        </form>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-truck-ramp-box"></i> Salidas / Ventas Recientes</div>
+        <table>
+          <thead>
+            <tr><th>Fecha</th><th>Producto</th><th>Cantidad</th><th>Motivo</th><th>Total</th></tr>
+          </thead>
+          <tbody id="ventasBody"></tbody>
+        </table>
+      </div>
+
+      <div class="section-card">
+        <div class="section-title"><i class="fa-solid fa-file-invoice-dollar"></i> Gastos Recientes</div>
+        <table>
+          <thead>
+            <tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Monto</th></tr>
+          </thead>
+          <tbody id="gastosBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
+    let supabaseClient = null;
+
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (e) {
+      console.error('Error inicializando Supabase:', e);
+    }
+
+    let ventas = [];
+    let gastos = [];
+
+    function formatNumber(num) {
+      let val = Number(num) || 0;
+      return val.toFixed(2);
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('es-GT', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function renderResumen() {
+      const ingresos = ventas.reduce((acc, v) => acc + (Number(v.cantidad) * Number(v.precio_unitario)), 0);
+      const costoVentas = ventas.reduce((acc, v) => acc + (Number(v.cantidad) * Number(v.costo_unitario || 0)), 0);
+      const utilidadBruta = ingresos - costoVentas;
+      const totalGastos = gastos.reduce((acc, g) => acc + Number(g.monto), 0);
+      const utilidadNeta = utilidadBruta - totalGastos;
+
+      document.getElementById('sumIngresos').textContent = 'Q' + formatNumber(ingresos);
+      document.getElementById('sumCostoVentas').textContent = 'Q' + formatNumber(costoVentas);
+      document.getElementById('sumUtilidadBruta').textContent = 'Q' + formatNumber(utilidadBruta);
+      document.getElementById('sumGastos').textContent = 'Q' + formatNumber(totalGastos);
+      const utilidadNetaEl = document.getElementById('sumUtilidadNeta');
+      utilidadNetaEl.textContent = 'Q' + formatNumber(utilidadNeta);
+      utilidadNetaEl.style.color = utilidadNeta >= 0 ? 'var(--good)' : 'var(--bad)';
+    }
+
+    function renderRentabilidad() {
+      const grupos = {};
+      ventas.forEach(v => {
+        const key = v.producto_nombre || 'Sin nombre';
+        if (!grupos[key]) {
+          grupos[key] = { unidades: 0, ingreso: 0, costo: 0 };
+        }
+        grupos[key].unidades += Number(v.cantidad);
+        grupos[key].ingreso += Number(v.cantidad) * Number(v.precio_unitario);
+        grupos[key].costo += Number(v.cantidad) * Number(v.costo_unitario || 0);
+      });
+
+      const filas = Object.entries(grupos).map(([nombre, d]) => {
+        const utilidad = d.ingreso - d.costo;
+        const margen = d.ingreso > 0 ? (utilidad / d.ingreso) * 100 : 0;
+        return { nombre, ...d, utilidad, margen };
+      }).sort((a, b) => b.utilidad - a.utilidad);
+
+      const tbody = document.getElementById('rentabilidadBody');
+
+      if (filas.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 30px; color: var(--text-muted);">Todavía no hay salidas registradas</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filas.map(f => `
+        <tr>
+          <td><b>${f.nombre}</b></td>
+          <td>${f.unidades}</td>
+          <td>Q${formatNumber(f.ingreso)}</td>
+          <td>Q${formatNumber(f.costo)}</td>
+          <td class="${f.utilidad >= 0 ? 'positive' : 'negative'}">Q${formatNumber(f.utilidad)}</td>
+          <td class="${f.margen >= 0 ? 'positive' : 'negative'}">${f.margen.toFixed(1)}%</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderVentasRecientes() {
+      const tbody = document.getElementById('ventasBody');
+      const recientes = [...ventas].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 15);
+
+      if (recientes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px; color: var(--text-muted);">Sin registros aún</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = recientes.map(v => `
+        <tr>
+          <td>${formatDate(v.created_at)}</td>
+          <td>${v.producto_nombre}</td>
+          <td>${v.cantidad}</td>
+          <td>${v.motivo || '-'}</td>
+          <td>Q${formatNumber(v.cantidad * v.precio_unitario)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderGastosRecientes() {
+      const tbody = document.getElementById('gastosBody');
+      const recientes = [...gastos].sort((a, b) => new Date(b.created_at) - new Date(a.created_at)).slice(0, 15);
+
+      if (recientes.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--text-muted);">Sin gastos registrados aún</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = recientes.map(g => `
+        <tr>
+          <td>${formatDate(g.created_at)}</td>
+          <td>${g.concepto}</td>
+          <td>${g.categoria || '-'}</td>
+          <td>Q${formatNumber(g.monto)}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderTodo() {
+      renderResumen();
+      renderRentabilidad();
+      renderVentasRecientes();
+      renderGastosRecientes();
+    }
+
+    async function cargarDatos() {
+      if (!supabaseClient) {
+        document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> No se pudo conectar con Supabase.';
+        return;
+      }
+
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      if (!user) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      try {
+        const [ventasRes, gastosRes] = await Promise.all([
+          supabaseClient.from('ventas').select('*'),
+          supabaseClient.from('gastos').select('*')
+        ]);
+
+        if (ventasRes.error) throw ventasRes.error;
+        if (gastosRes.error) throw gastosRes.error;
+
+        ventas = ventasRes.data || [];
+        gastos = gastosRes.data || [];
+
+        renderTodo();
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('contentWrapper').style.display = 'block';
+      } catch (err) {
+        document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al cargar los datos: ' + err.message;
+      }
+    }
+
+    document.getElementById('gastoForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const concepto = document.getElementById('gastoConcepto').value;
+      const monto = parseFloat(document.getElementById('gastoMonto').value);
+      const categoria = document.getElementById('gastoCategoria').value;
+
+      if (!concepto || !monto || monto <= 0) {
+        alert('Completa el concepto y un monto válido.');
+        return;
+      }
+
+      try {
+        const { error } = await supabaseClient.from('gastos').insert([{ concepto, monto, categoria }]);
+        if (error) throw error;
+
+        gastos.push({ concepto, monto, categoria, created_at: new Date().toISOString() });
+        renderTodo();
+        document.getElementById('gastoForm').reset();
+      } catch (err) {
+        alert('Error al registrar el gasto: ' + err.message);
+      }
+    });
+
+    document.getElementById('btnLogoutAdmin').addEventListener('click', async () => {
+      if (supabaseClient) {
+        try { await supabaseClient.auth.signOut(); } catch (e) {}
+      }
+      window.location.href = 'index.html';
+    });
+
+    cargarDatos();
+  </script>
+</body>
+</html>
