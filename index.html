@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Boutique Yesica - Inventario y Catálogo</title>
+  <title>Boutique Yesica - Catálogo</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -52,19 +52,13 @@
     .badge-stock { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: var(--text-dark); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); z-index: 2; }
     
     .product-thumbnails { display: flex; gap: 6px; padding: 8px 12px 0 12px; overflow-x: auto; scrollbar-width: none; }
-    .thumb-container { position: relative; flex-shrink: 0; }
-    .thumb-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 2px solid var(--border); cursor: pointer; opacity: 0.7; display: block; }
+    .thumb-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 2px solid var(--border); cursor: pointer; opacity: 0.7; flex-shrink: 0; }
     .thumb-img.active { border-color: var(--primary); opacity: 1; }
-    .btn-delete-thumb { position: absolute; top: -4px; right: -4px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
     .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
     .category-tag { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
     .product-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
     
-    /* Estilo de miniatura para inventario / salidas */
-    .prod-info-cell { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
-    .inventario-miniatura { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; }
-
     .card-footer { margin-top: auto; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 12px; }
     .price-tag { font-size: 18px; font-weight: 800; color: var(--text-dark); }
     .price-tag span { font-size: 13px; color: var(--text-muted); margin-right: 2px; }
@@ -78,23 +72,15 @@
     <div class="nav-container">
       <div class="logo-brand">
         <h1>Boutique Yesica</h1>
-        <span>Catálogo y Control</span>
+        <span>Catálogo Exclusivo</span>
       </div>
     </div>
   </header>
 
   <main class="main-wrapper">
     <div class="hero-banner">
-      <h2>Gestión e Inventario</h2>
-      <p>Sube múltiples fotos de la galería, actualiza sin perder las previas y gestiona salidas fácilmente.</p>
-    </div>
-
-    <!-- Ejemplo de cómo se vería la sección de inventario/salidas integrando la miniatura debajo de Prod -->
-    <div class="filters-section" style="margin-bottom: 20px;">
-      <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 12px;"><i class="fa-solid fa-boxes-stacked"></i> Módulo de Salidas de Inventario (Vista Previa)</h3>
-      <div id="inventarioSalidasList">
-        <!-- Se llenará dinámicamente con la miniatura debajo del nombre del producto -->
-      </div>
+      <h2>Nueva Colección</h2>
+      <p>Estilo y elegancia a tu alcance.</p>
     </div>
 
     <div class="filters-section">
@@ -159,7 +145,6 @@
         }
       }
       renderProducts();
-      renderInventarioSalidas();
     }
 
     function formatNumber(num) {
@@ -171,96 +156,6 @@
       if (!productSelectionState[id]) productSelectionState[id] = { activeImgIdx: 0 };
       productSelectionState[id].activeImgIdx = idx;
       renderProducts();
-    }
-
-    // Función crucial: Sube múltiples fotos de la galería y las une sin borrar las previas
-    async function agregarFotosDesdeGaleria(productId, archivosNuevos) {
-      if (!supabaseClient || !archivosNuevos || archivosNuevos.length === 0) return;
-      
-      const producto = productsList.find(p => p.id == productId);
-      if (!producto) return;
-
-      let nuevasUrls = [];
-      for (let archivo of archivosNuevos) {
-        const fileName = `prod_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-        const { error: uploadError } = await supabaseClient.storage
-          .from('productos-bucket')
-          .upload(fileName, archivo);
-
-        if (!uploadError) {
-          const { data: publicUrlData } = supabaseClient.storage
-            .from('productos-bucket')
-            .getPublicUrl(fileName);
-          if (publicUrlData?.publicUrl) {
-            nuevasUrls.push(publicUrlData.publicUrl);
-          }
-        }
-      }
-
-      // Combinar fotos existentes con las nuevas recién subidas
-      let fotosFinales = [...producto.imagenes, ...nuevasUrls];
-      let imagenUrlString = fotosFinales.join(',');
-
-      // Actualizar en base de datos
-      const { error } = await supabaseClient
-        .from('productos')
-        .update({ imagen_url: imagenUrlString })
-        .eq('id', productId);
-
-      if (!error) {
-        await loadProducts(); // Recargar datos frescos
-      } else {
-        alert("Error al actualizar las imágenes en Supabase.");
-      }
-    }
-
-    // Función para eliminar una foto específica de la lista del producto
-    async function eliminarFotoIndividual(productId, indexParaBorrar) {
-      const producto = productsList.find(p => p.id == productId);
-      if (!producto) return;
-
-      // Filtrar sacando el índice que se desea eliminar
-      let fotosActualizadas = producto.imagenes.filter((_, idx) => idx !== indexParaBorrar);
-      let imagenUrlString = fotosActualizadas.join(',');
-
-      const { error } = await supabaseClient
-        .from('productos')
-        .update({ imagen_url: imagenUrlString })
-        .eq('id', productId);
-
-      if (!error) {
-        await loadProducts();
-      } else {
-        alert("Error al eliminar la foto.");
-      }
-    }
-
-    function renderInventarioSalidas() {
-      const container = document.getElementById('inventarioSalidasList');
-      if (!container) return;
-
-      if (productsList.length === 0) {
-        container.innerHTML = `<p style="font-size: 13px; color: var(--text-muted);">No hay productos registrados.</p>`;
-        return;
-      }
-
-      // Muestra una lista simulada de salidas de inventario con la miniatura debajo del producto
-      container.innerHTML = productsList.slice(0, 3).map(p => {
-        const fotoPrincipal = p.imagenes[0] || '';
-        return `
-          <div style="display: flex; justify-content: space-between; align-items: center; background: white; padding: 10px 14px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px;">
-            <div>
-              <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Prod</span>
-              <div style="font-weight: 700; font-size: 14px; color: var(--text-dark);">${p.nombre}</div>
-              ${fotoPrincipal ? `<img src="${fotoPrincipal}" class="inventario-miniatura" alt="Miniatura">` : ''}
-            </div>
-            <div style="text-align: right;">
-              <span style="font-size: 12px; color: var(--text-muted); display: block;">Stock actual: <strong>${p.stock}</strong></span>
-              <button type="button" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; margin-top: 4px;" onclick="alert('Registrar salida para: ${p.nombre}')">Dar Salida</button>
-            </div>
-          </div>
-        `;
-      }).join('');
     }
 
     function renderProducts() {
@@ -284,21 +179,12 @@
         if (state.activeImgIdx >= p.imagenes.length) state.activeImgIdx = 0;
         const activeImg = p.imagenes[state.activeImgIdx];
 
-        // Renderiza miniaturas con el botón 'X' para eliminar y un botón extra para subir más fotos de la galería
-        let thumbsHtml = `
+        let thumbsHtml = p.imagenes.length > 1 ? `
           <div class="product-thumbnails">
             ${p.imagenes.map((img, idx) => `
-              <div class="thumb-container">
-                <img src="${img}" class="thumb-img ${state.activeImgIdx === idx ? 'active' : ''}" onclick="setProductImage('${p.id}', ${idx})" alt="Thumb">
-                <button type="button" class="btn-delete-thumb" onclick="eliminarFotoIndividual('${p.id}', ${idx})" title="Eliminar foto">×</button>
-              </div>
+              <img src="${img}" class="thumb-img ${state.activeImgIdx === idx ? 'active' : ''}" onclick="setProductImage('${p.id}', ${idx})" alt="Thumb">
             `).join('')}
-            
-            <label style="width: 40px; height: 40px; border-radius: 6px; border: 2px dashed var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--bg-color); flex-shrink: 0;" title="Agregar fotos de la galería">
-              <i class="fa-solid fa-plus" style="font-size: 12px; color: var(--text-muted);"></i>
-              <input type="file" accept="image/*" multiple style="display: none;" onchange="agregarFotosDesdeGaleria('${p.id}', this.files)">
-            </label>
-          </div>`;
+          </div>` : '';
 
         return `
           <div class="product-card">
