@@ -3,181 +3,447 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Salidas de Inventario y Fotos</title>
+  <title>Boutique Yesica - Admin PWA</title>
+  
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#2B2B2B">
+  <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1803/1803504.png">
+  
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <style>
     :root {
-      --primary: #2B2B2B;
-      --bg-color: #FDFBF7;
-      --card-bg: #FFFFFF;
-      --border: #E5E5E5;
-      --text-dark: #2B2B2B;
-      --text-muted: #737373;
-      --radius: 12px;
+      --primary: #2B2B2B; --secondary: #D9C3B0; --bg-color: #FDFBF7; --card-bg: #FFFFFF;
+      --border: #E5E5E5; --text-dark: #2B2B2B; --text-muted: #737373; --radius: 12px;
+      --shadow: 0 8px 30px rgba(0,0,0,0.04);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-dark); padding: 20px; }
-    .admin-container { max-width: 900px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
-    h2 { font-size: 20px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+    body { background: var(--bg-color); color: var(--text-dark); min-height: 100vh; }
     
-    /* Estructura para Salidas de Inventario con la miniatura debajo de Prod */
-    .salida-row { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
-    .prod-label-group { display: flex; flex-direction: column; }
-    .prod-header-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
-    .prod-name { font-weight: 700; font-size: 14px; color: var(--text-dark); margin: 2px 0; }
+    .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+    .login-card { background: var(--card-bg); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; }
+    .login-card h2 { margin-bottom: 24px; font-weight: 800; }
     
-    /* Miniatura debajo de Prod */
-    .inventario-miniatura { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; margin-bottom: 6px; }
+    .form-group { margin-bottom: 16px; text-align: left; }
+    .form-group label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 12px 14px; border-radius: 8px; border: 1px solid var(--border); font-size: 14px; outline: none; background: var(--bg-color); }
+    .form-control:focus { border-color: var(--primary); }
     
-    .admin-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
-    .admin-thumb-box { position: relative; }
-    .admin-thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
-    .btn-del { position: absolute; top: -6px; right: -6px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+    .btn-submit:hover { background: #000; }
     
-    .btn-action { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .upload-btn-label { display: inline-flex; align-items: center; gap: 6px; background: #F0EDE6; border: 1px dashed var(--border); padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; color: var(--text-dark); margin-top: 8px; width: fit-content; }
+    .admin-dashboard-container { display: none; padding-bottom: 60px; }
+    header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .nav-links { display: flex; gap: 16px; }
+    .nav-links a, .nav-links button { text-decoration: none; color: var(--text-dark); font-size: 13px; font-weight: 600; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 6px; }
+    .nav-links a:hover, .nav-links button:hover { background: var(--bg-color); }
+    
+    .dashboard-grid { max-width: 1200px; margin: 30px auto; padding: 0 16px; display: grid; grid-template-columns: 1fr; gap: 24px; }
+    @media (min-width: 768px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+    
+    .admin-card { background: var(--card-bg); padding: 24px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+    .admin-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+    
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .admin-products-list { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+    .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+    .list-info h4 { font-size: 15px; margin-bottom: 4px; }
+    .list-info p { font-size: 12px; color: var(--text-muted); }
   </style>
 </head>
 <body>
-  <div class="admin-container">
-    <h2><i class="fa-solid fa-boxes-stacked"></i> Administración - Salidas de Inventario</h2>
-    <div id="adminSalidasList">Cargando inventario...</div>
+
+  <div class="login-container">
+    <div class="login-card">
+      <h2>Acceso Administrativo</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="admin@miboutique.com" required>
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="loginPassword" class="form-control" required>
+        </div>
+        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="admin-dashboard-container">
+    <header>
+      <div style="font-weight: 800; font-size: 18px;">Boutique Yesica <span style="color: var(--text-muted); font-size:12px;">PWA</span></div>
+      <div class="nav-links">
+        <a href="inventario.html"><i class="fa-solid fa-warehouse"></i> Inventario</a>
+        <a href="administracion.html"><i class="fa-solid fa-chart-line"></i> Finanzas</a>
+        <button type="button" id="btnLogout"><i class="fa-solid fa-power-off"></i> Salir</button>
+      </div>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Formulario Administrar Producto (Nuevo o Existente) -->
+      <div class="admin-card">
+        <h3><i class="fa-solid fa-box-open"></i> Gestión de Productos</h3>
+        
+        <div class="form-group">
+          <label>Modo de Operación</label>
+          <select id="modeSelector" class="form-control" onchange="cambiarModoFormulario()">
+            <option value="nuevo">✨ Crear Nuevo Producto</option>
+            <option value="existente">🔄 Actualizar / Agregar Existencias a Existente</option>
+          </select>
+        </div>
+
+        <form id="productForm">
+          
+          <!-- Selector visible solo si elige "Existente" -->
+          <div class="form-group" id="groupExistenteSelect" style="display: none;">
+            <label>Seleccionar Producto Existente</label>
+            <select class="form-control" id="selectProductoExistente" onchange="cargarDatosProductoExistente()"></select>
+          </div>
+
+          <div class="form-group">
+            <label>Nombre del Producto</label>
+            <input type="text" class="form-control" name="prod_nombre" placeholder="Nombre completo del producto" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Categoría</label>
+              <select class="form-control" name="prod_categoria" required>
+                <option value="zapatos">Zapatos</option>
+                <option value="playeras">Playeras</option>
+                <option value="pantalones">Pantalones</option>
+                <option value="vestidos">Vestidos</option>
+                <option value="accesorios">Accesorios</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Género</label>
+              <select class="form-control" name="prod_genero" required>
+                <option value="dama">Dama</option>
+                <option value="caballero">Caballero</option>
+                <option value="unisex">Unisex</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Precio Venta (Q)</label>
+              <input type="number" step="0.01" class="form-control" name="prod_precio" placeholder="0.00" required>
+            </div>
+            <div class="form-group">
+              <label>Costo (Q)</label>
+              <input type="number" step="0.01" class="form-control" name="prod_costo" placeholder="0.00">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label id="lblExistencias">Existencias a Agregar / Total</label>
+              <input type="number" class="form-control" name="prod_existencias" placeholder="Cantidad física" required>
+            </div>
+            <div class="form-group">
+              <label>Tallas <span style="font-weight: 400; color: var(--text-muted);">(Opcional)</span></label>
+              <input type="text" class="form-control" name="prod_tallas" placeholder="Ej: S, M, L o dejar vacío">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Imagen del Producto</label>
+            <input type="file" class="form-control" id="prod_imagen_file" accept="image/*">
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnGuardarProd">Guardar Producto</button>
+        </form>
+      </div>
+
+      <!-- Formulario para Registrar Salida -->
+      <div class="admin-card">
+        <h3><i class="fa-solid fa-truck-ramp-box"></i> Salida de Inventario</h3>
+        <form id="salidaForm">
+          <div class="form-group">
+            <label>Producto</label>
+            <select class="form-control" name="salida_producto" required></select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Cantidad</label>
+              <input type="number" min="1" class="form-control" name="salida_cantidad" value="1" required>
+            </div>
+            <div class="form-group">
+              <label>Motivo</label>
+              <select class="form-control" name="salida_motivo" required>
+                <option value="venta">Venta</option>
+                <option value="dañado">Dañado</option>
+                <option value="perdida">Pérdida</option>
+                <option value="ajuste">Ajuste</option>
+                <option value="otro">Otro</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-submit">Registrar Salida</button>
+        </form>
+      </div>
+    </div>
+    
+    <div class="admin-products-list"></div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-    const STORAGE_BUCKET = 'productos-img';
-    let supabaseClient = null;
-
-    try {
-      if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) { console.error(e); }
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
 
     let productsList = [];
+    let selectedProductIdForEdit = null;
 
-    document.addEventListener('DOMContentLoaded', loadAdminProducts);
-
-    async function loadAdminProducts() {
-      if (!supabaseClient) return;
-      const { data, error } = await supabaseClient.from('productos').select('*');
-      if (error) {
-        console.error(error);
-        return;
+    window.addEventListener('load', async () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
       }
-      if (data) {
-        productsList = data.map(item => {
-          let imgs = [];
-          if (item.imagen_url) {
-            imgs = item.imagen_url.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      actualizarVista(session);
+      if (session) {
+        await loadProductsFromSupabase();
+      }
+
+      configurarEventosDOM();
+    });
+
+    function actualizarVista(session) {
+      const loginSection = document.querySelector('.login-container');
+      const adminPanel = document.querySelector('.admin-dashboard-container');
+
+      if (session) {
+        if (loginSection) loginSection.style.display = 'none';
+        if (adminPanel) adminPanel.style.display = 'block';
+      } else {
+        if (loginSection) loginSection.style.display = 'flex';
+        if (adminPanel) adminPanel.style.display = 'none';
+      }
+    }
+
+    function cambiarModoFormulario() {
+      const modo = document.getElementById('modeSelector').value;
+      const groupSelect = document.getElementById('groupExistenteSelect');
+      const form = document.getElementById('productForm');
+
+      if (modo === 'existente') {
+        groupSelect.style.display = 'block';
+        document.getElementById('lblExistencias').textContent = "Unidades a Sumar al Stock";
+        document.getElementById('btnGuardarProd').textContent = "Actualizar / Sumar Stock";
+        if (productsList.length > 0) cargarDatosProductoExistente();
+      } else {
+        groupSelect.style.display = 'none';
+        document.getElementById('lblExistencias').textContent = "Existencias Iniciales";
+        document.getElementById('btnGuardarProd').textContent = "Crear Nuevo Producto";
+        form.reset();
+        selectedProductIdForEdit = null;
+      }
+    }
+
+    function cargarDatosProductoExistente() {
+      const selectId = document.getElementById('selectProductoExistente').value;
+      const prod = productsList.find(p => p.id == selectId);
+      if (!prod) return;
+
+      selectedProductIdForEdit = prod.id;
+      const form = document.getElementById('productForm');
+      form.querySelector('input[name="prod_nombre"]').value = prod.nombre || '';
+      form.querySelector('select[name="prod_categoria"]').value = prod.categoria || 'zapatos';
+      form.querySelector('select[name="prod_genero"]').value = prod.genero || 'dama';
+      form.querySelector('input[name="prod_precio"]').value = prod.precio || 0;
+      form.querySelector('input[name="prod_costo"]').value = prod.costo || 0;
+      form.querySelector('input[name="prod_existencias"]').value = 0; // Se deja en 0 para sumar nuevas unidades
+      
+      let tallasStr = '';
+      if (Array.isArray(prod.tallas)) tallasStr = prod.tallas.join(', ');
+      else if (typeof prod.tallas === 'string') tallasStr = prod.tallas;
+      form.querySelector('input[name="prod_tallas"]').value = tallasStr;
+    }
+
+    function configurarEventosDOM() {
+      const formLogin = document.getElementById('loginForm');
+      if (formLogin) {
+        formLogin.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const email = document.getElementById('loginEmail')?.value.trim();
+          const password = document.getElementById('loginPassword')?.value.trim();
+
+          try {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            actualizarVista(data.session);
+            await loadProductsFromSupabase();
+          } catch (error) {
+            alert('Acceso denegado: ' + error.message);
           }
-          return { ...item, imagenes: imgs };
         });
       }
-      renderAdminInventario();
-    }
 
-    async function adminAgregarMultiplesFotos(productId, fileList) {
-      if (!supabaseClient || !fileList || fileList.length === 0) return;
-      const producto = productsList.find(p => p.id == productId);
-      if (!producto) return;
+      const logoutBtn = document.getElementById('btnLogout');
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (event) => {
+          event.preventDefault();
+          await supabaseClient.auth.signOut();
+          actualizarVista(null);
+        });
+      }
 
-      let nuevasUrls = [];
-      for (let i = 0; i < fileList.length; i++) {
-        const archivo = fileList[i];
-        const fileName = `prod_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`;
-        
-        const { error: uploadError } = await supabaseClient.storage
-          .from(STORAGE_BUCKET)
-          .upload(fileName, archivo);
-
-        if (!uploadError) {
-          const { data: publicUrlData } = supabaseClient.storage
-            .from(STORAGE_BUCKET)
-            .getPublicUrl(fileName);
+      const formProducto = document.getElementById('productForm');
+      if (formProducto) {
+        formProducto.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const btnSubmitProd = document.getElementById('btnGuardarProd');
+          const modo = document.getElementById('modeSelector').value;
           
-          if (publicUrlData?.publicUrl) {
-            nuevasUrls.push(publicUrlData.publicUrl);
+          const nombre = formProducto.querySelector('input[name="prod_nombre"]').value.trim();
+          const categoria = formProducto.querySelector('select[name="prod_categoria"]').value;
+          const genero = formProducto.querySelector('select[name="prod_genero"]').value;
+          const precio = parseFloat(formProducto.querySelector('input[name="prod_precio"]').value);
+          const costo = parseFloat(formProducto.querySelector('input[name="prod_costo"]').value || 0);
+          const stockInput = parseInt(formProducto.querySelector('input[name="prod_existencias"]').value || 0);
+          
+          const tallasStr = formProducto.querySelector('input[name="prod_tallas"]').value;
+          // Tallas opcionales: si está vacío se guarda como array vacío o null
+          const tallas = tallasStr.trim() ? tallasStr.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
+          
+          const fileInput = document.getElementById('prod_imagen_file');
+          const file = fileInput.files[0];
+
+          btnSubmitProd.disabled = true;
+          btnSubmitProd.textContent = "Guardando...";
+
+          try {
+            let imagen_url = "";
+            if (file) {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+              const { error: uploadError } = await supabaseClient.storage
+                .from('productos-img')
+                .upload(fileName, file);
+
+              if (uploadError) throw new Error("Error al subir imagen: " + uploadError.message);
+
+              const { data: publicURLData } = supabaseClient.storage
+                .from('productos-img')
+                .getPublicUrl(fileName);
+
+              imagen_url = publicURLData.publicUrl;
+            }
+
+            if (modo === 'nuevo') {
+              const payload = { nombre, categoria, genero, precio, costo, stock: stockInput, tallas };
+              if (imagen_url) payload.imagen_url = imagen_url;
+
+              const { error } = await supabaseClient.from('productos').insert([payload]);
+              if (error) throw error;
+              alert("¡Nuevo producto creado con éxito!");
+            } else {
+              // Modo existente: actualizar datos y sumar stock
+              const prodActual = productsList.find(p => p.id == selectedProductIdForEdit);
+              const nuevoStock = (prodActual ? prodActual.stock : 0) + stockInput;
+
+              const payload = { nombre, categoria, genero, precio, costo, stock: nuevoStock, tallas };
+              if (imagen_url) payload.imagen_url = imagen_url;
+
+              const { error } = await supabaseClient.from('productos').update(payload).eq('id', selectedProductIdForEdit);
+              if (error) throw error;
+              alert("¡Producto actualizado y stock sumado exitosamente!");
+            }
+
+            formProducto.reset();
+            document.getElementById('modeSelector').value = 'nuevo';
+            cambiarModoFormulario();
+            await loadProductsFromSupabase();
+          } catch (err) {
+            alert("Error al procesar: " + err.message);
+          } finally {
+            btnSubmitProd.disabled = false;
+            btnSubmitProd.textContent = "Guardar Producto";
           }
-        }
+        });
       }
 
-      let fotosFinales = [...producto.imagenes, ...nuevasUrls];
-      let imagenUrlString = fotosFinales.join(',');
+      const formSalida = document.getElementById('salidaForm');
+      if (formSalida) {
+        formSalida.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const selectProducto = formSalida.querySelector('select[name="salida_producto"]');
+          const productId = selectProducto.value;
+          const productoNombre = selectProducto.options[selectProducto.selectedIndex]?.text.split(' (')[0];
+          const cantidad = parseInt(formSalida.querySelector('input[name="salida_cantidad"]').value);
+          const motivo = formSalida.querySelector('select[name="salida_motivo"]').value;
 
-      const { error: updateError } = await supabaseClient
-        .from('productos')
-        .update({ imagen_url: imagenUrlString })
-        .eq('id', productId);
+          try {
+            const prodActual = productsList.find(p => p.id == productId);
+            if (!prodActual) throw new Error("Producto no encontrado");
+            if (prodActual.stock < cantidad) throw new Error(`Stock insuficiente. Actual: ${prodActual.stock}`);
 
-      if (!updateError) {
-        await loadAdminProducts();
-      } else {
-        alert("Error al actualizar las imágenes en la base de datos.");
-      }
-    }
+            await supabaseClient.from('ventas').insert([{
+              producto_nombre: productoNombre,
+              cantidad: cantidad,
+              motivo: motivo,
+              precio_unitario: prodActual.precio,
+              costo_unitario: prodActual.costo || 0
+            }]);
 
-    async function adminEliminarFoto(productId, indexParaBorrar) {
-      const producto = productsList.find(p => p.id == productId);
-      if (!producto) return;
-
-      let fotosActualizadas = producto.imagenes.filter((_, idx) => idx !== indexParaBorrar);
-      let imagenUrlString = fotosActualizadas.join(',');
-
-      const { error } = await supabaseClient
-        .from('productos')
-        .update({ imagen_url: imagenUrlString })
-        .eq('id', productId);
-
-      if (!error) {
-        await loadAdminProducts();
-      } else {
-        alert("No se pudo eliminar la imagen.");
-      }
-    }
-
-    function renderAdminInventario() {
-      const container = document.getElementById('adminSalidasList');
-      if (!container) return;
-
-      if (productsList.length === 0) {
-        container.innerHTML = `<p>No hay productos registrados.</p>`;
-        return;
-      }
-
-      container.innerHTML = productsList.map(p => {
-        const fotoPrincipal = p.imagenes.length > 0 ? p.imagenes[0] : '';
-        return `
-          <div class="salida-row">
-            <div class="prod-label-group">
-              <span class="prod-header-title">Prod</span>
-              ${fotoPrincipal ? `<img src="${fotoPrincipal}" class="inventario-miniatura" alt="Miniatura">` : '<span style="font-size:11px; color:#999; margin:4px 0;">Sin foto</span>'}
-              <div class="prod-name">${p.nombre} (Stock: ${p.stock})</div>
+            await supabaseClient.from('productos').update({ stock: prodActual.stock - cantidad }).eq('id', productId);
               
-              <div class="admin-gallery">
-                ${p.imagenes.map((img, idx) => `
-                  <div class="admin-thumb-box">
-                    <img src="${img}" class="admin-thumb-img" alt="Foto">
-                    <button type="button" class="btn-del" onclick="adminEliminarFoto('${p.id}', ${idx})" title="Eliminar foto">×</button>
-                  </div>
-                `).join('')}
-              </div>
+            alert('¡Salida registrada con éxito!');
+            formSalida.reset();
+            await loadProductsFromSupabase();
+          } catch (err) {
+            alert('Error: ' + err.message);
+          }
+        });
+      }
+    }
 
-              <label class="upload-btn-label">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Agregar fotos (Múltiple)
-                <input type="file" accept="image/*" multiple style="display: none;" onchange="adminAgregarMultiplesFotos('${p.id}', this.files)">
-              </label>
-            </div>
-            <div>
-              <button type="button" class="btn-action" onclick="alert('Salida procesada para ${p.nombre}')">Dar Salida</button>
+    async function loadProductsFromSupabase() {
+      try {
+        const { data, error } = await supabaseClient.from('productos').select('*');
+        if (error) throw error;
+        if (data) {
+          productsList = data;
+          actualizarSelects();
+          renderProducts();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function actualizarSelects() {
+      const selectSalida = document.querySelector('select[name="salida_producto"]');
+      if (selectSalida) {
+        selectSalida.innerHTML = productsList.map(p => `<option value="${p.id}">${p.nombre} (Stock: ${p.stock})</option>`).join('');
+      }
+
+      const selectExistente = document.getElementById('selectProductoExistente');
+      if (selectExistente) {
+        selectExistente.innerHTML = productsList.map(p => `<option value="${p.id}">${p.nombre}</option>`).join('');
+      }
+    }
+
+    function renderProducts() {
+      const grid = document.querySelector('.admin-products-list');
+      if (grid) {
+        grid.innerHTML = productsList.map(p => `
+          <div class="list-item">
+            <div class="list-info">
+              <h4>${p.nombre}</h4>
+              <p>Precio: Q${p.precio} | Costo: Q${p.costo || 0} | Stock: ${p.stock} | Tallas: ${Array.isArray(p.tallas) && p.tallas.length > 0 ? p.tallas.join(', ') : 'N/A'}</p>
             </div>
           </div>
-        `;
-      }).join('');
+        `).join('');
+      }
     }
   </script>
 </body>
