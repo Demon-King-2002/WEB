@@ -140,8 +140,8 @@
           </div>
 
           <div class="form-group">
-            <label>URL de Imagen (Opcional)</label>
-            <input type="url" class="form-control" name="prod_imagen" placeholder="https://ejemplo.com/imagen.jpg">
+            <label>Imagen del Producto (Galería)</label>
+            <input type="file" class="form-control" id="prod_imagen_file" accept="image/*">
           </div>
 
           <button type="submit" class="btn-submit">Guardar Producto</button>
@@ -264,25 +264,47 @@
           const stock = parseInt(formProducto.querySelector('input[name="prod_existencias"]').value);
           const tallasStr = formProducto.querySelector('input[name="prod_tallas"]').value;
           const tallas = tallasStr.split(',').map(t => t.trim()).filter(t => t.length > 0);
-          const imagen_url = formProducto.querySelector('input[name="prod_imagen"]').value.trim();
+          
+          const fileInput = document.getElementById('prod_imagen_file');
+          const file = fileInput.files[0];
 
           if (btnSubmitProd) {
             btnSubmitProd.disabled = true;
-            btnSubmitProd.textContent = "Guardando...";
+            btnSubmitProd.textContent = "Subiendo imagen y guardando...";
           }
 
           try {
+            let imagen_url = "";
+
+            if (file) {
+              const fileExt = file.name.split('.').pop();
+              const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
+              const filePath = `${fileName}`;
+
+              const { error: uploadError } = await supabaseClient.storage
+                .from('productos-img')
+                .upload(filePath, file);
+
+              if (uploadError) throw new Error("Error al subir la imagen: " + uploadError.message);
+
+              const { data: publicURLData } = supabaseClient.storage
+                .from('productos-img')
+                .getPublicUrl(filePath);
+
+              imagen_url = publicURLData.publicUrl;
+            }
+
             const payload = { nombre, categoria, genero, precio, costo, stock, tallas };
             if (imagen_url) payload.imagen_url = imagen_url;
 
             const { error } = await supabaseClient.from('productos').insert([payload]);
             if (error) throw error;
             
-            alert("¡Producto guardado y guardado en la base de datos exitosamente!");
+            alert("¡Producto e imagen guardados exitosamente!");
             formProducto.reset();
             await loadProductsFromSupabase();
           } catch (err) {
-            alert("Error al guardar: " + err.message);
+            alert("Error al procesar: " + err.message);
           } finally {
             if (btnSubmitProd) {
               btnSubmitProd.disabled = false;
@@ -316,7 +338,6 @@
               throw new Error(`Stock insuficiente. Stock actual: ${prodActual.stock}`);
             }
 
-            // Registrar la venta/salida incluyendo precio y costo unitario para que Finanzas funcione
             const { error: errVenta } = await supabaseClient.from('ventas').insert([{
               producto_nombre: productoNombre,
               cantidad: cantidad,
@@ -326,7 +347,6 @@
             }]);
             if (errVenta) throw errVenta;
 
-            // Actualizar stock del producto
             const nuevoStock = prodActual.stock - cantidad;
             const { error: errStock } = await supabaseClient
               .from('productos')
