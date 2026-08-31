@@ -21,10 +21,10 @@
     .back-link { text-decoration: none; color: var(--text-dark); font-weight: 700; font-size: 14px; }
     
     .main-wrapper { max-width: 1200px; margin: 30px auto; padding: 0 16px; }
-    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 24px; }
     .summary-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
-    .summary-card span { font-size: 13px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px; }
-    .summary-card b { font-size: 24px; font-weight: 800; color: var(--text-dark); }
+    .summary-card span { font-size: 12px; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 6px; text-transform: uppercase; }
+    .summary-card b { font-size: 20px; font-weight: 800; color: var(--text-dark); }
     
     .table-wrapper { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -33,7 +33,7 @@
     td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
     
     .search-box { margin-bottom: 20px; display: flex; }
-    .search-box input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); }
+    .search-box input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); outline: none; font-size: 14px; background: var(--card-bg); }
   </style>
 </head>
 <body>
@@ -57,7 +57,17 @@
     </div>
     <div class="table-wrapper">
       <table id="invTable">
-        <thead><tr><th>Prod</th><th>Nombre</th><th>Cat</th><th>Precio</th><th>Stock</th><th>Tallas</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Prod</th>
+            <th>Nombre</th>
+            <th>Cat</th>
+            <th>Precio Venta</th>
+            <th>Costo Unit.</th>
+            <th>Stock</th>
+            <th>Tallas</th>
+          </tr>
+        </thead>
         <tbody id="invTableBody"></tbody>
       </table>
     </div>
@@ -70,25 +80,55 @@
 
     async function cargarInventario() {
       const { data } = await supabaseClient.from('productos').select('*');
-      if (data) { productos = data; renderSummary(); renderTable(); }
+      if (data) { 
+        productos = data; 
+        renderSummary(); 
+        renderTable(); 
+      }
     }
     
     function renderTable() {
       const search = document.getElementById('searchInv').value.toLowerCase();
       const filtered = productos.filter(p => p.nombre.toLowerCase().includes(search));
-      document.getElementById('invTableBody').innerHTML = filtered.map(p => `
-        <tr>
-          <td><img src="${p.imagen_url || ''}" style="width:30px; border-radius:4px;"></td>
-          <td>${p.nombre}</td><td>${p.categoria}</td><td>Q${p.precio}</td><td>${p.stock}</td>
-          <td>${Array.isArray(p.tallas) ? p.tallas.join(',') : p.tallas}</td>
-        </tr>
-      `).join('');
+      
+      document.getElementById('invTableBody').innerHTML = filtered.map(p => {
+        const tallasStr = Array.isArray(p.tallas) && p.tallas.length > 0 ? p.tallas.join(', ') : 'N/A';
+        return `
+          <tr>
+            <td><img src="${p.imagen_url || ''}" style="width:30px; height:30px; object-fit:cover; border-radius:4px;"></td>
+            <td><b>${p.nombre}</b></td>
+            <td>${p.categoria}</td>
+            <td>Q${Number(p.precio || 0).toFixed(2)}</td>
+            <td>Q${Number(p.costo || 0).toFixed(2)}</td>
+            <td>${p.stock}</td>
+            <td>${tallasStr}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
     function renderSummary() {
+      let totalUnidades = 0;
+      let valorVentaTotal = 0;
+      let valorCostoTotal = 0;
+      let stockBajo = 0;
+
+      productos.forEach(p => {
+        const stock = parseInt(p.stock) || 0;
+        const precio = parseFloat(p.precio) || 0;
+        const costo = parseFloat(p.costo) || 0;
+
+        totalUnidades += stock;
+        valorVentaTotal += (precio * stock);
+        valorCostoTotal += (costo * stock);
+        if (stock < 5) stockBajo++;
+      });
+
       document.getElementById('sumProductos').textContent = productos.length;
-      document.getElementById('sumUnidades').textContent = productos.reduce((a, p) => a + (p.stock || 0), 0);
-      document.getElementById('sumStockBajo').textContent = productos.filter(p => p.stock < 5).length;
+      document.getElementById('sumUnidades').textContent = totalUnidades;
+      document.getElementById('sumValorVenta').textContent = `Q ${valorVentaTotal.toFixed(2)}`;
+      document.getElementById('sumValorCosto').textContent = `Q ${valorCostoTotal.toFixed(2)}`;
+      document.getElementById('sumStockBajo').textContent = stockBajo;
     }
 
     document.getElementById('searchInv').addEventListener('input', renderTable);
@@ -96,6 +136,7 @@
       await supabaseClient.auth.signOut();
       window.location.href = 'admin.html';
     });
+    
     cargarInventario();
   </script>
 </body>
