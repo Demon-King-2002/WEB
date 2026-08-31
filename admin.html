@@ -64,14 +64,14 @@
       <h2>Acceso Administrativo</h2>
       <form id="loginForm">
         <div class="form-group">
-          <label for="login_email">Correo Electrónico</label>
-          <input type="email" class="form-control" id="login_email" placeholder="admin@miboutique.com" required>
+          <label for="login-email">Correo Electrónico</label>
+          <input type="email" class="form-control" id="login-email" placeholder="admin@miboutique.com" required>
         </div>
         <div class="form-group">
-          <label for="login_password">Contraseña</label>
-          <input type="password" class="form-control" id="login_password" required>
+          <label for="login-password">Contraseña</label>
+          <input type="password" class="form-control" id="login-password" required>
         </div>
-        <button type="submit" class="btn-submit" id="btnLoginSubmit">Iniciar Sesión</button>
+        <button type="button" class="btn-submit" id="btn-login">Iniciar Sesión</button>
       </form>
     </div>
   </div>
@@ -87,7 +87,6 @@
     </header>
 
     <div class="dashboard-grid">
-      <!-- Formulario para ingresar producto -->
       <div class="admin-card">
         <h3><i class="fa-solid fa-box-open"></i> Ingresar / Editar Producto</h3>
         <form id="productForm">
@@ -151,7 +150,6 @@
         </form>
       </div>
 
-      <!-- Formulario para salida de producto -->
       <div class="admin-card">
         <h3><i class="fa-solid fa-truck-ramp-box"></i> Registrar Salida</h3>
         <form id="salidaForm">
@@ -184,11 +182,7 @@
   </div>
 
   <script>
-    // --- CONEXIÓN FIJA Y PERSISTENTE ---
-    // Nota: El cliente original JS requiere una URL completa (https://...), 
-    // pero aquí respetamos estrictamente tu nomenclatura solicitada. 
-    // (Si presenta error de red, cambia 'supabase.co' por 'https://zfbvhdkoknzrwqfjthsb.supabase.co')
-    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co'; // Usamos la completa para evitar que se rompa, pero el código es idéntico a tu solicitud
+    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true }
@@ -221,11 +215,10 @@
       }
     }
 
-    // Login
-    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+    document.getElementById('btn-login').addEventListener('click', async (event) => {
       event.preventDefault();
-      const email = document.getElementById('login_email').value.trim();
-      const password = document.getElementById('login_password').value.trim();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value.trim();
 
       try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
@@ -238,14 +231,12 @@
       }
     });
 
-    // Logout
     document.getElementById('btnLogout').addEventListener('click', async (event) => {
       event.preventDefault();
       await supabase.auth.signOut();
       actualizarVista(null);
     });
 
-    // Cargar productos
     async function loadProductsFromSupabase() {
       try {
         const { data, error } = await supabase.from('productos').select('*');
@@ -310,7 +301,6 @@
       }
     };
 
-    // --- ARREGLAR FORMULARIO DE PRODUCTOS ---
     document.getElementById('productForm').addEventListener('submit', async (event) => {
       event.preventDefault();
       
@@ -320,7 +310,7 @@
       const genVal = document.getElementById('prodGender').value;
       const precioVal = document.getElementById('prodPrice').value;
       const costoVal = document.getElementById('prodCost').value;
-      const existenciasVal = document.getElementById('prodStock').value;
+      const stockVal = document.getElementById('prodStock').value;
       const tallasVal = document.getElementById('prodSizes').value;
 
       const btnSubmit = document.getElementById('btnSubmitProd');
@@ -329,26 +319,24 @@
 
       try {
         if (id) {
-          // Lógica de Update si ya existe (manteniendo la misma estructura de extraccion)
           const { error } = await supabase.from('productos').update({
             nombre: nombreVal,
             categoria: catVal,
             genero: genVal,
             precio: parseFloat(precioVal),
             costo: parseFloat(costoVal),
-            stock: parseInt(existenciasVal),
+            stock: parseInt(stockVal),
             tallas: tallasVal.split(',').map(t => t.trim())
           }).eq('id', id);
           if (error) throw error;
         } else {
-          // Lógica de Inserción estricta solicitada
           const { error } = await supabase.from('productos').insert([{
             nombre: nombreVal,
             categoria: catVal,
             genero: genVal,
             precio: parseFloat(precioVal),
             costo: parseFloat(costoVal),
-            stock: parseInt(existenciasVal),
+            stock: parseInt(stockVal),
             tallas: tallasVal.split(',').map(t => t.trim())
           }], { returning: 'minimal' });
 
@@ -367,7 +355,6 @@
       }
     });
 
-    // --- ARREGLAR FORMULARIO DE SALIDAS (VENTAS) ---
     document.getElementById('salidaForm').addEventListener('submit', async (event) => {
       event.preventDefault();
       
@@ -388,7 +375,6 @@
       btnSalida.textContent = "Registrando...";
 
       try {
-        // Lógica de Inserción estricta solicitada
         const { error } = await supabase.from('ventas').insert([{
           producto_nombre: productoVal,
           cantidad: parseInt(cantidadVal),
@@ -397,7 +383,6 @@
 
         if (error) throw error;
 
-        // Actualizar stock local y en BD
         const nuevoStock = prod.stock - parseInt(cantidadVal);
         const { error: stockError } = await supabase.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
         if (stockError) throw stockError;
