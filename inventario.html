@@ -3,369 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Inventario - Boutique</title>
-
+  <title>Inventario - Boutique Yesica</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
   <style>
     :root {
-      --primary: #FF1493;
-      --primary-hover: #E0007A;
-      --secondary: #7B2CBF;
-      --bg-gradient: linear-gradient(135deg, #FFF0F6 0%, #F3E8FF 50%, #FFE5EC 100%);
-      --card-bg: rgba(255, 255, 255, 0.9);
-      --glass-border: rgba(255, 255, 255, 0.6);
-      --text-dark: #2A082C;
-      --text-muted: #6C5268;
-      --shadow-vivid: 0 12px 35px -8px rgba(255, 20, 147, 0.22);
-      --radius: 20px;
+      --primary: #2B2B2B; --secondary: #D9C3B0; --bg-color: #FDFBF7; --card-bg: #FFFFFF;
+      --border: #E5E5E5; --text-dark: #2B2B2B; --text-muted: #737373; --radius: 12px;
+      --shadow: 0 4px 20px rgba(0,0,0,0.04);
     }
-
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-
-    body {
-      background: var(--bg-gradient);
-      background-attachment: fixed;
-      color: var(--text-dark);
-      min-height: 100vh;
-      padding-bottom: 60px;
-    }
-
-    header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--glass-border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      box-shadow: 0 4px 25px rgba(0,0,0,0.05);
-    }
-
-    .nav-container {
-      max-width: 1300px;
-      margin: 0 auto;
-      padding: 16px 24px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .back-link {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: var(--text-dark);
-      font-weight: 700;
-      font-size: 15px;
-    }
-
-    .back-link i { color: var(--primary); }
-
-    .page-title-badge {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-weight: 800;
-      font-size: 18px;
-    }
-
-    .page-title-badge i {
-      width: 40px; height: 40px;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      color: white; font-size: 18px;
-    }
-
-    .btn-logout-small {
-      background: #F4E8F4;
-      border: none;
-      color: var(--text-dark);
-      cursor: pointer;
-      font-size: 13px;
-      padding: 10px 16px;
-      border-radius: 30px;
-      font-weight: 700;
-      display: flex; align-items: center; gap: 8px;
-    }
-
-    .main-wrapper {
-      max-width: 1300px;
-      margin: 30px auto;
-      padding: 0 16px;
-    }
-
-    .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .summary-card {
-      background: var(--card-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 20px;
-      box-shadow: var(--shadow-vivid);
-    }
-
+    body { background: var(--bg-color); color: var(--text-dark); min-height: 100vh; padding-bottom: 60px; }
+    
+    header { background: var(--card-bg); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+    .nav-container { max-width: 1200px; margin: 0 auto; padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .back-link { text-decoration: none; color: var(--text-dark); font-weight: 700; font-size: 14px; }
+    
+    .main-wrapper { max-width: 1200px; margin: 30px auto; padding: 0 16px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .summary-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
     .summary-card span { font-size: 13px; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px; }
     .summary-card b { font-size: 24px; font-weight: 800; color: var(--text-dark); }
-    .summary-card.alert b { color: var(--primary); }
-
-    .toolbar {
-      background: var(--card-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      padding: 16px 20px;
-      margin-bottom: 20px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .search-box {
-      flex: 1;
-      min-width: 220px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #FFF;
-      border-radius: 30px;
-      padding: 10px 18px;
-      border: 1px solid var(--glass-border);
-    }
-
-    .search-box input { border: none; outline: none; width: 100%; font-size: 14px; }
-    .search-box i { color: var(--text-muted); }
-
-    .table-wrapper {
-      background: var(--card-bg);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--radius);
-      overflow: hidden;
-      box-shadow: var(--shadow-vivid);
-    }
-
+    
+    .table-wrapper { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 14px; }
-
-    thead { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
-    th { padding: 14px 16px; text-align: left; font-weight: 700; white-space: nowrap; }
-    td { padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-    tbody tr:hover { background: rgba(255, 20, 147, 0.04); }
-
-    .prod-thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
-
-    .stock-badge {
-      padding: 4px 10px;
-      border-radius: 20px;
-      font-weight: 700;
-      font-size: 12px;
-    }
-    .stock-ok { background: #E6FFF5; color: #00A876; }
-    .stock-low { background: #FFF0E6; color: #FF7A00; }
-    .stock-out { background: #FFE6E6; color: #FF3B3B; }
-
-    .loading-state, .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-    }
-    .loading-state i, .empty-state i { font-size: 32px; margin-bottom: 12px; display: block; color: var(--primary); }
-
-    @media (max-width: 700px) {
-      table { font-size: 12px; }
-      th, td { padding: 10px 8px; }
-      .prod-thumb { width: 34px; height: 34px; }
-    }
+    thead { background: var(--bg-color); border-bottom: 1px solid var(--border); }
+    th { padding: 14px 16px; text-align: left; font-weight: 700; color: var(--text-muted); }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    
+    .search-box { margin-bottom: 20px; display: flex; }
+    .search-box input { flex: 1; padding: 12px 16px; border-radius: 8px; border: 1px solid var(--border); }
   </style>
 </head>
 <body>
-
   <header>
     <div class="nav-container">
-      <a href="index.html" class="back-link">
-        <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
-      </a>
-      <div class="page-title-badge">
-        <i class="fa-solid fa-warehouse"></i> Inventario Detallado
-      </div>
-      <button class="btn-logout-small" id="btnLogoutInv" type="button">
-        <i class="fa-solid fa-power-off"></i> Cerrar Sesión
-      </button>
+      <a href="admin.html" class="back-link"><i class="fa-solid fa-arrow-left"></i> Volver al Panel</a>
+      <div style="font-weight: 800;">Inventario Central</div>
+      <button id="btnLogoutInv" style="background:none; border:none; cursor:pointer; font-weight:600;"><i class="fa-solid fa-power-off"></i></button>
     </div>
   </header>
-
   <main class="main-wrapper">
     <div class="summary-grid">
-      <div class="summary-card">
-        <span>Productos distintos</span>
-        <b id="sumProductos">0</b>
-      </div>
-      <div class="summary-card">
-        <span>Unidades totales en stock</span>
-        <b id="sumUnidades">0</b>
-      </div>
-      <div class="summary-card">
-        <span>Valor de inventario (venta)</span>
-        <b id="sumValorVenta">Q0.00</b>
-      </div>
-      <div class="summary-card">
-        <span>Valor de inventario (costo)</span>
-        <b id="sumValorCosto">Q0.00</b>
-      </div>
-      <div class="summary-card alert">
-        <span>Productos con stock bajo (&lt; 5)</span>
-        <b id="sumStockBajo">0</b>
-      </div>
+      <div class="summary-card"><span>Productos</span><b id="sumProductos">0</b></div>
+      <div class="summary-card"><span>Unidades</span><b id="sumUnidades">0</b></div>
+      <div class="summary-card"><span>Valor Venta</span><b id="sumValorVenta">Q0.00</b></div>
+      <div class="summary-card"><span>Valor Costo</span><b id="sumValorCosto">Q0.00</b></div>
+      <div class="summary-card"><span>Stock Bajo</span><b id="sumStockBajo">0</b></div>
     </div>
-
-    <div class="toolbar">
-      <div class="search-box">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <input type="text" id="searchInv" placeholder="Buscar por nombre o categoría...">
-      </div>
+    <div class="search-box">
+      <input type="text" id="searchInv" placeholder="Buscar producto...">
     </div>
-
     <div class="table-wrapper">
-      <div id="loadingState" class="loading-state">
-        <i class="fa-solid fa-spinner fa-spin"></i> Cargando inventario...
-      </div>
-      <table id="invTable" style="display:none;">
-        <thead>
-          <tr>
-            <th></th>
-            <th>Producto</th>
-            <th>Categoría</th>
-            <th>Género</th>
-            <th>Precio Venta</th>
-            <th>Costo</th>
-            <th>Stock</th>
-            <th>Tallas</th>
-            <th>Valor en Stock</th>
-          </tr>
-        </thead>
+      <table id="invTable">
+        <thead><tr><th>Prod</th><th>Nombre</th><th>Cat</th><th>Precio</th><th>Stock</th><th>Tallas</th></tr></thead>
         <tbody id="invTableBody"></tbody>
       </table>
     </div>
   </main>
-
   <script>
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-    let supabaseClient = null;
-
-    try {
-      if (window.supabase && typeof window.supabase.createClient === 'function') {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      }
-    } catch (e) {
-      console.error('Error inicializando Supabase:', e);
-    }
-
+    let supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     let productos = [];
 
-    function formatNumber(num) {
-      let val = Number(num) || 0;
-      return (val % 1 === 0) ? val.toString() : val.toFixed(2);
+    async function cargarInventario() {
+      const { data } = await supabaseClient.from('productos').select('*');
+      if (data) { productos = data; renderSummary(); renderTable(); }
     }
-
-    function stockClass(stock) {
-      if (stock <= 0) return 'stock-out';
-      if (stock < 5) return 'stock-low';
-      return 'stock-ok';
-    }
-
+    
     function renderTable() {
       const search = document.getElementById('searchInv').value.toLowerCase();
-      const filtered = productos.filter(p =>
-        p.nombre.toLowerCase().includes(search) || (p.categoria || '').toLowerCase().includes(search)
-      );
-
-      const tbody = document.getElementById('invTableBody');
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; padding: 40px; color: var(--text-muted);">No se encontraron productos</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = filtered.map(p => {
-        const tallas = Array.isArray(p.tallas) ? p.tallas.join(', ') : (p.tallas || '');
-        const valorStock = (p.precio || 0) * (p.stock || 0);
-        const img = p.imagen_url || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=100&q=80';
-        return `
-          <tr>
-            <td><img class="prod-thumb" src="${img}" alt="${p.nombre}" onerror="this.src='https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=100&q=80'"></td>
-            <td><b>${p.nombre}</b></td>
-            <td>${(p.categoria || '').replace('_', ' & ')}</td>
-            <td>${p.genero || '-'}</td>
-            <td>Q${formatNumber(p.precio)}</td>
-            <td>Q${formatNumber(p.costo)}</td>
-            <td><span class="stock-badge ${stockClass(p.stock)}">${p.stock}</span></td>
-            <td>${tallas}</td>
-            <td>Q${formatNumber(valorStock)}</td>
-          </tr>
-        `;
-      }).join('');
+      const filtered = productos.filter(p => p.nombre.toLowerCase().includes(search));
+      document.getElementById('invTableBody').innerHTML = filtered.map(p => `
+        <tr>
+          <td><img src="${p.imagen_url || ''}" style="width:30px; border-radius:4px;"></td>
+          <td>${p.nombre}</td><td>${p.categoria}</td><td>Q${p.precio}</td><td>${p.stock}</td>
+          <td>${Array.isArray(p.tallas) ? p.tallas.join(',') : p.tallas}</td>
+        </tr>
+      `).join('');
     }
 
     function renderSummary() {
-      const totalProductos = productos.length;
-      const totalUnidades = productos.reduce((acc, p) => acc + (Number(p.stock) || 0), 0);
-      const valorVenta = productos.reduce((acc, p) => acc + (Number(p.precio) || 0) * (Number(p.stock) || 0), 0);
-      const valorCosto = productos.reduce((acc, p) => acc + (Number(p.costo) || 0) * (Number(p.stock) || 0), 0);
-      const stockBajo = productos.filter(p => Number(p.stock) < 5).length;
-
-      document.getElementById('sumProductos').textContent = totalProductos;
-      document.getElementById('sumUnidades').textContent = totalUnidades;
-      document.getElementById('sumValorVenta').textContent = 'Q' + formatNumber(valorVenta);
-      document.getElementById('sumValorCosto').textContent = 'Q' + formatNumber(valorCosto);
-      document.getElementById('sumStockBajo').textContent = stockBajo;
-    }
-
-    async function cargarInventario() {
-      if (!supabaseClient) {
-        document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> No se pudo conectar con Supabase.';
-        return;
-      }
-
-      const { data: { user } } = await supabaseClient.auth.getUser();
-      if (!user) {
-        window.location.href = 'index.html';
-        return;
-      }
-
-      try {
-        const { data, error } = await supabaseClient.from('productos').select('*').order('nombre', { ascending: true });
-        if (error) throw error;
-        productos = data || [];
-        renderSummary();
-        renderTable();
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('invTable').style.display = 'table';
-      } catch (err) {
-        document.getElementById('loadingState').innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> Error al cargar el inventario: ' + err.message;
-      }
+      document.getElementById('sumProductos').textContent = productos.length;
+      document.getElementById('sumUnidades').textContent = productos.reduce((a, p) => a + (p.stock || 0), 0);
+      document.getElementById('sumStockBajo').textContent = productos.filter(p => p.stock < 5).length;
     }
 
     document.getElementById('searchInv').addEventListener('input', renderTable);
-
     document.getElementById('btnLogoutInv').addEventListener('click', async () => {
-      if (supabaseClient) {
-        try { await supabaseClient.auth.signOut(); } catch (e) {}
-      }
-      window.location.href = 'index.html';
+      await supabaseClient.auth.signOut();
+      window.location.href = 'admin.html';
     });
-
     cargarInventario();
   </script>
 </body>
