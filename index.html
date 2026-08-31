@@ -54,21 +54,26 @@
     
     .product-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: transform 0.2s; display: flex; flex-direction: column; }
     .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+    
     .card-img-wrapper { width: 100%; height: 220px; background: #F5F5F5; position: relative; cursor: pointer; }
     .card-img-wrapper img { width: 100%; height: 100%; object-fit: cover; }
-    .badge-stock { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: var(--text-dark); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); }
+    .badge-stock { position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.9); color: var(--text-dark); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid var(--border); z-index: 2; }
     
+    /* Estilos para la minigalería de fotos múltiples */
+    .product-thumbnails { display: flex; gap: 6px; padding: 8px 12px 0 12px; overflow-x: auto; scrollbar-width: none; }
+    .thumb-img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; border: 2px solid var(--border); cursor: pointer; opacity: 0.7; transition: all 0.2s; flex-shrink: 0; }
+    .thumb-img:hover { opacity: 1; }
+    .thumb-img.active { border-color: var(--primary); opacity: 1; }
+
     .card-body { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
     .category-tag { font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
     .product-title { font-size: 15px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; line-height: 1.3; }
     
-    /* Controles de Talla e Interacción */
     .section-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; display: block; }
     .sizes-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
     .size-btn { background: var(--bg-color); color: var(--text-dark); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
     .size-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Control Cantidad + / - */
     .quantity-control { display: flex; align-items: center; justify-content: space-between; background: var(--bg-color); border: 1px solid var(--border); border-radius: 8px; padding: 4px 8px; margin-bottom: 12px; }
     .qty-btn { background: none; border: none; font-size: 14px; font-weight: 700; cursor: pointer; color: var(--text-dark); width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
     .qty-display { font-size: 13px; font-weight: 700; }
@@ -80,7 +85,6 @@
     .btn-whatsapp { background: #25D366; color: white; padding: 8px 14px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px; transition: opacity 0.2s; }
     .btn-whatsapp:hover { opacity: 0.9; }
 
-    /* Modal de Vista Previa */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
     .modal-content { background: white; border-radius: var(--radius); max-width: 500px; width: 100%; overflow: hidden; position: relative; }
     .modal-content img { width: 100%; height: 350px; object-fit: cover; }
@@ -134,7 +138,6 @@
     <div class="products-grid" id="productsGrid"></div>
   </main>
 
-  <!-- Modal Vista Previa -->
   <div class="modal-overlay" id="imageModal" onclick="closeModal()">
     <div class="modal-content" onclick="event.stopPropagation()">
       <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -161,8 +164,6 @@
     let productsList = [];
     let currentCategory = 'todos';
     let currentGender = 'todos';
-    
-    // Estado local para cantidades y tallas seleccionadas por producto ID
     const productSelectionState = {};
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -200,7 +201,17 @@
               } else if (typeof item.tallas === 'string' && item.tallas.trim() !== '') {
                 tallasParsed = item.tallas.split(',').map(s => s.trim()).filter(s => s.length > 0);
               }
-              return { ...item, tallas: tallasParsed };
+
+              // Procesar múltiples imágenes separadas por comas (o saltos de línea) en el campo imagen_url
+              let imgsParsed = [];
+              if (item.imagen_url) {
+                imgsParsed = item.imagen_url.split(/[,,\n]+/).map(s => s.trim()).filter(s => s.length > 0);
+              }
+              if (imgsParsed.length === 0) {
+                imgsParsed = ['https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80'];
+              }
+
+              return { ...item, tallas: tallasParsed, imagenes: imgsParsed };
             });
           }
         } catch (e) { console.error(e); }
@@ -214,17 +225,23 @@
     }
 
     function selectSize(id, talla) {
-      if (!productSelectionState[id]) productSelectionState[id] = { qty: 1, size: null };
+      if (!productSelectionState[id]) productSelectionState[id] = { qty: 1, size: null, activeImgIdx: 0 };
       productSelectionState[id].size = talla;
       renderProducts();
     }
 
     function changeQty(id, delta, maxStock) {
-      if (!productSelectionState[id]) productSelectionState[id] = { qty: 1, size: null };
+      if (!productSelectionState[id]) productSelectionState[id] = { qty: 1, size: null, activeImgIdx: 0 };
       let newQty = productSelectionState[id].qty + delta;
       if (newQty < 1) newQty = 1;
       if (newQty > maxStock) newQty = maxStock;
       productSelectionState[id].qty = newQty;
+      renderProducts();
+    }
+
+    function setProductImage(id, idx) {
+      if (!productSelectionState[id]) productSelectionState[id] = { qty: 1, size: null, activeImgIdx: 0 };
+      productSelectionState[id].activeImgIdx = idx;
       renderProducts();
     }
 
@@ -260,14 +277,14 @@
         if (!productSelectionState[p.id]) {
           productSelectionState[p.id] = { 
             qty: 1, 
-            size: p.tallas && p.tallas.length > 0 ? p.tallas[0] : null 
+            size: p.tallas && p.tallas.length > 0 ? p.tallas[0] : null,
+            activeImgIdx: 0
           };
         }
 
         const state = productSelectionState[p.id];
-        const imgUrl = p.imagen_url || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=600&q=80';
+        const activeImg = p.imagenes[state.activeImgIdx] || p.imagenes[0];
         
-        // Construir HTML de tallas sólo si el producto tiene tallas registradas
         let sizesHtml = '';
         if (p.tallas && p.tallas.length > 0) {
           sizesHtml = `
@@ -280,17 +297,32 @@
           `;
         }
 
-        // Construir mensaje detallado para WhatsApp incluyendo Imagen, URL, Talla y Cantidad
-        const currentUrl = window.location.href.split('?')[0];
+        // Renderizar miniaturas múltiples si el producto tiene más de 1 imagen
+        let thumbsHtml = '';
+        if (p.imagenes && p.imagenes.length > 1) {
+          thumbsHtml = `
+            <div class="product-thumbnails">
+              ${p.imagenes.map((img, idx) => `
+                <img src="${img}" class="thumb-img ${state.activeImgIdx === idx ? 'active' : ''}" onclick="event.stopPropagation(); setProductImage('${p.id}', ${idx})" alt="Vista ${idx+1}">
+              `).join('')}
+            </div>
+          `;
+        }
+
         const tallaText = state.size ? ` | Talla: ${state.size}` : '';
-        const whatsappMsg = `Hola! Me interesa cotizar este producto:\n\n*${p.nombre}*${tallaText}\nCantidad: ${state.qty}\nPrecio Unitario: Q${formatNumber(p.precio)}\nTotal estimado: Q${formatNumber(p.precio * state.qty)}\n\nImagen: ${imgUrl}\nRef Catálogo: ${currentUrl}`;
+        
+        // El mensaje de WhatsApp mantiene la imagen activa seleccionada al principio para generar su vista previa correspondiente
+        const whatsappMsg = `${activeImg}\n\nHola! Me interesa cotizar este producto:\n\n*${p.nombre}*${tallaText}\nCantidad: ${state.qty}\nPrecio Unitario: Q${formatNumber(p.precio)}\nTotal estimado: Q${formatNumber(p.precio * state.qty)}`;
         
         return `
           <div class="product-card">
-            <div class="card-img-wrapper" onclick="openModal('${imgUrl}', '${p.name || p.nombre}', '${p.categoria}')">
-              <img src="${imgUrl}" alt="${p.nombre}">
+            <div class="card-img-wrapper" onclick="openModal('${activeImg}', '${p.nombre}', '${p.categoria}')">
+              <img src="${activeImg}" alt="${p.nombre}">
               <span class="badge-stock">Disp: ${p.stock}</span>
             </div>
+            
+            ${thumbsHtml}
+
             <div class="card-body">
               <span class="category-tag">${p.categoria} - ${p.genero || ''}</span>
               <h3 class="product-title">${p.nombre}</h3>
