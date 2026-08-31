@@ -365,19 +365,87 @@
     }
   </script>
   
-  <!-- Registro de Service Worker PWA -->
-  <script>
+  <!-- Control de Acceso con Supabase y Registro PWA -->
+<script src="https://jsdelivr.net"></script>
+<script>
+  // 1. CREDENCIALES DE SUPABASE
+  const SUPABASE_URL = 'https://supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
+  const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // 2. ELEMENTOS DE LA INTERFAZ
+  // Buscamos los contenedores principales por selectores lógicos
+  const loginSection = document.querySelector('input[type="email"]')?.closest('div') || document.querySelector('form')?.parentElement;
+  const adminPanel = document.querySelector('h3')?.closest('div') || document.getElementById('panel-admin');
+  
+  const emailInput = document.querySelector('input[type="email"]');
+  const passwordInput = document.querySelector('input[type="password"]');
+  
+  // Buscamos los botones por su contenido de texto
+  const loginBtn = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Iniciar Sesión'));
+  const logoutBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('Salir'));
+
+  // 3. EVENTO DE CARGA DE PÁGINA
+  window.addEventListener('load', async () => {
+    // Mantener registro del Service Worker de la PWA que ya tenías
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(registration => {
-            console.log('SW registrado con éxito:', registration.scope);
-          })
-          .catch(err => {
-            console.log('Error al registrar SW:', err);
-          });
-      });
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW registrado con éxito:', reg.scope))
+        .catch(err => console.error('Error al registrar SW:', err));
     }
-  </script>
+
+    // Verificar si Yesica ya dejó la sesión iniciada en su teléfono
+    const { data: { session } } = await supabase.auth.getSession();
+    actualizarVista(session);
+  });
+
+  // Alternar visualmente entre el Login y el Panel
+  function actualizarVista(session) {
+    if (session) {
+      if (loginSection) loginSection.style.display = 'none';
+      if (adminPanel) adminPanel.style.display = 'block';
+    } else {
+      if (loginSection) loginSection.style.display = 'block';
+      if (adminPanel) adminPanel.style.display = 'none';
+    }
+  }
+
+  // 4. ACCIÓN DEL BOTÓN INICIAR SESIÓN
+  if (loginBtn) {
+    loginBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      
+      const email = emailInput?.value.trim();
+      const password = passwordInput?.value.trim();
+
+      if (!email || !password) {
+        alert("Por favor, introduce tu correo y contraseña.");
+        return;
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+
+      if (error) {
+        alert("Acceso denegado: " + error.message);
+      } else {
+        alert("¡Bienvenida de nuevo, Yesica!");
+        actualizarVista(data.session);
+      }
+    });
+  }
+
+  // 5. ACCIÓN DEL BOTÓN SALIR / CERRAR SESIÓN
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      window.location.reload(); 
+    });
+  }
+</script>
+
 </body>
 </html>
