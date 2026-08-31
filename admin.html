@@ -49,7 +49,6 @@
     
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     
-    /* Product List for Admin to Edit/Delete */
     .admin-products-list { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .list-info h4 { font-size: 15px; margin-bottom: 4px; }
@@ -63,7 +62,7 @@
   <div id="loginSection" class="login-container">
     <div class="login-card">
       <h2>Acceso Administrativo</h2>
-      <form id="loginForm" onsubmit="handleLogin(event)">
+      <form id="loginForm">
         <div class="form-group">
           <label for="login_email">Correo Electrónico</label>
           <input type="email" class="form-control" id="login_email" placeholder="admin@miboutique.com" required>
@@ -72,7 +71,7 @@
           <label for="login_password">Contraseña</label>
           <input type="password" class="form-control" id="login_password" required>
         </div>
-        <button type="submit" class="btn-submit">Iniciar Sesión</button>
+        <button type="submit" class="btn-submit" id="btnLoginSubmit">Iniciar Sesión</button>
       </form>
     </div>
   </div>
@@ -83,12 +82,12 @@
       <div class="nav-links">
         <a href="inventario.html"><i class="fa-solid fa-warehouse"></i> Inventario</a>
         <a href="administracion.html"><i class="fa-solid fa-chart-line"></i> Finanzas</a>
-        <button id="btnLogout" onclick="logoutUser()"><i class="fa-solid fa-power-off"></i> Salir</button>
+        <button id="btnLogout"><i class="fa-solid fa-power-off"></i> Salir</button>
       </div>
     </header>
 
     <div class="dashboard-grid">
-      <!-- Formulario intacto para ingresar producto -->
+      <!-- Formulario para ingresar producto -->
       <div class="admin-card">
         <h3><i class="fa-solid fa-box-open"></i> Ingresar / Editar Producto</h3>
         <form id="productForm">
@@ -152,7 +151,7 @@
         </form>
       </div>
 
-      <!-- Formulario intacto para salida de producto -->
+      <!-- Formulario para salida de producto -->
       <div class="admin-card">
         <h3><i class="fa-solid fa-truck-ramp-box"></i> Registrar Salida</h3>
         <form id="salidaForm">
@@ -187,68 +186,76 @@
   <script>
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-    let supabaseClient = null;
-    let currentUser = null;
-    let productsList = [];
-
-    try {
-      if (window.supabase) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-          auth: {
-            persistSession: true,
-            autoRefreshToken: true
-          }
-        });
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true
       }
-    } catch (e) { console.error(e); }
-
-    document.addEventListener('DOMContentLoaded', async () => {
-      if (supabaseClient) {
-        const { data: { user } } = await supabaseClient.auth.getUser();
-        if (user) {
-          currentUser = user;
-          updateUIAfterLogin();
-        }
-      }
-      document.getElementById('productForm').addEventListener('submit', saveProduct);
-      document.getElementById('salidaForm').addEventListener('submit', registrarSalida);
     });
 
-    async function handleLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('login_email').value;
-      const password = document.getElementById('login_password').value;
+    let productsList = [];
+
+    window.addEventListener('load', async () => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
+      }
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      actualizarVista(session);
+
+      if (session) {
+        loadProductsFromSupabase();
+      }
+    });
+
+    function actualizarVista(session) {
+      const loginSection = document.getElementById('loginSection');
+      const adminDashboard = document.getElementById('adminDashboard');
+      if (session) {
+        loginSection.style.display = 'none';
+        adminDashboard.style.display = 'block';
+      } else {
+        loginSection.style.display = 'flex';
+        adminDashboard.style.display = 'none';
+      }
+    }
+
+    // Login Form Event
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value.trim();
+
       try {
         const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        currentUser = data.user;
-        updateUIAfterLogin();
+        alert("¡Bienvenida de nuevo, Yesica!");
+        actualizarVista(data.session);
+        loadProductsFromSupabase();
       } catch (error) {
-        alert('Error: ' + error.message);
+        alert('Acceso denegado: ' + error.message);
       }
-    }
+    });
 
-    function updateUIAfterLogin() {
-      document.getElementById('loginSection').style.display = 'none';
-      document.getElementById('adminDashboard').style.display = 'block';
-      loadProductsFromSupabase();
-    }
-
-    async function logoutUser() {
-      if (supabaseClient) await supabaseClient.auth.signOut();
-      currentUser = null;
-      document.getElementById('loginSection').style.display = 'flex';
-      document.getElementById('adminDashboard').style.display = 'none';
-    }
+    // Logout Button Event
+    document.getElementById('btnLogout').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabaseClient.auth.signOut();
+      actualizarVista(null);
+    });
 
     async function loadProductsFromSupabase() {
-      if (supabaseClient) {
+      try {
         const { data, error } = await supabaseClient.from('productos').select('*');
-        if (!error && data) {
+        if (error) throw error;
+        if (data) {
           productsList = data.map(item => ({
             ...item, tallas: typeof item.tallas === 'string' ? item.tallas.split(',').map(s => s.trim()) : item.tallas
           }));
         }
+      } catch (e) {
+        console.error(e);
       }
       renderProducts();
       actualizarSelectSalidas();
@@ -268,8 +275,8 @@
             <p>Q${p.precio} | Stock: ${p.stock} | Cat: ${p.categoria}</p>
           </div>
           <div class="list-actions">
-            <button onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+            <button onclick="editProduct('${p.id}')" type="button"><i class="fa-solid fa-pen"></i></button>
+            <button onclick="deleteProduct('${p.id}')" type="button"><i class="fa-solid fa-trash"></i></button>
           </div>
         </div>
       `).join('');
@@ -293,19 +300,33 @@
 
     window.deleteProduct = async function(id) {
       if (confirm('¿Eliminar producto?')) {
-        if (supabaseClient) {
-          await supabaseClient.from('productos').delete().eq('id', id);
-        }
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) { alert("Sesión expirada. Inicie sesión nuevamente."); location.reload(); return; }
+
+        const { error } = await supabaseClient.from('productos').delete().eq('id', id);
+        if (error) { alert("Error al eliminar: " + error.message); return; }
+
         productsList = productsList.filter(p => p.id !== id);
         renderProducts();
         actualizarSelectSalidas();
       }
     };
 
-    async function saveProduct(e) {
+    // Guardar Producto con preventDefault y validación estricta de sesión
+    document.getElementById('productForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        alert("Sesión expirada o inactiva. Por favor, vuelva a iniciar sesión.");
+        actualizarVista(null);
+        return;
+      }
+
       const btnSubmit = document.getElementById('btnSubmitProd');
       btnSubmit.disabled = true;
+      btnSubmit.textContent = "Guardando...";
+
       try {
         const id = document.getElementById('prodId').value;
         const nombre = document.getElementById('prodName').value;
@@ -318,143 +339,89 @@
         let imagen_url = document.getElementById('prodImgUrl').value;
         const fileInput = document.getElementById('prodImgFile');
 
-        if (fileInput.files.length > 0 && supabaseClient) {
+        if (fileInput.files.length > 0) {
           const file = fileInput.files[0];
           const fileName = `${Date.now()}_${file.name}`;
-          await supabaseClient.storage.from('productos').upload(fileName, file);
-          const { data } = supabaseClient.storage.from('productos').getPublicUrl(fileName);
-          imagen_url = data.publicUrl;
+          const { error: uploadError } = await supabaseClient.storage.from('productos').upload(fileName, file);
+          if (uploadError) throw uploadError;
+          const { data: publicURLData } = supabaseClient.storage.from('productos').getPublicUrl(fileName);
+          imagen_url = publicURLData.publicUrl;
         }
 
         const payload = { nombre, categoria, genero, precio, costo, stock, tallas, imagen_url };
+        
         if (id) {
-          await supabaseClient.from('productos').update(payload).eq('id', id);
+          const { error: updateError } = await supabaseClient.from('productos').update(payload).eq('id', id);
+          if (updateError) throw updateError;
         } else {
-          await supabaseClient.from('productos').insert([payload]);
+          const { error: insertError } = await supabaseClient.from('productos').insert([payload]);
+          if (insertError) throw insertError;
         }
         
         document.getElementById('productForm').reset();
         document.getElementById('prodId').value = '';
+        document.getElementById('prodImgUrl').value = '';
         await loadProductsFromSupabase();
-        alert("Producto guardado");
+        alert("¡Producto guardado exitosamente!");
       } catch (err) {
-        alert("Error: " + err.message);
+        alert("Error al guardar: " + err.message);
       } finally {
         btnSubmit.disabled = false;
+        btnSubmit.textContent = "Guardar Producto";
       }
-    }
+    });
 
-    async function registrarSalida(event) {
-      event.preventDefault();
-      const select = document.getElementById('salidaProducto');
-      const cantidad = parseInt(document.getElementById('salidaCantidad').value);
-      const motivo = document.getElementById('salidaMotivo').value;
-      const prod = productsList.find(p => p.id === select.value);
-
-      if (!prod || cantidad > prod.stock) { alert('Stock insuficiente'); return; }
-
-      const nuevoStock = prod.stock - cantidad;
-      try {
-        if (supabaseClient) {
-          await supabaseClient.from('ventas').insert([{
-            producto_id: prod.id, producto_nombre: prod.nombre, cantidad, 
-            precio_unitario: prod.precio, costo_unitario: prod.costo || 0, motivo
-          }]);
-          await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
-        }
-        await loadProductsFromSupabase();
-        alert('Salida registrada');
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-  </script>
-  
-  <!-- Control de Acceso con Supabase y Registro PWA -->
-<script>
-  // 1. CREDENCIALES DE SUPABASE
-  const PWA_SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
-  const PWA_SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
-  
-  const supabase = window.supabase.createClient(PWA_SUPABASE_URL, PWA_SUPABASE_ANON_KEY, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true
-    }
-  });
-
-  // 2. ELEMENTOS DE LA INTERFAZ
-  const loginSection = document.querySelector('input[type="email"]')?.closest('div') || document.querySelector('form')?.parentElement;
-  const adminPanel = document.querySelector('h3')?.closest('div') || document.getElementById('panel-admin');
-  
-  const emailInput = document.querySelector('input[type="email"]');
-  const passwordInput = document.querySelector('input[type="password"]');
-  
-  const loginBtn = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Iniciar Sesión'));
-  const logoutBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('Salir'));
-
-  // 3. EVENTO DE CARGA DE PÁGINA
-  window.addEventListener('load', () => {
-    // Mantener registro del Service Worker de la PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('SW registrado con éxito:', reg.scope))
-        .catch(err => console.error('Error al registrar SW:', err));
-    }
-
-    // Retraso para que la persistencia local recupere la sesión en móviles
-    setTimeout(async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      actualizarVista(session);
-    }, 100);
-  });
-
-  function actualizarVista(session) {
-    if (session) {
-      if (loginSection) loginSection.style.display = 'none';
-      if (adminPanel) adminPanel.style.display = 'block';
-    } else {
-      if (loginSection) loginSection.style.display = 'block';
-      if (adminPanel) adminPanel.style.display = 'none';
-    }
-  }
-
-  // 4. ACCIÓN DEL BOTÓN INICIAR SESIÓN
-  if (loginBtn) {
-    loginBtn.addEventListener('click', async (e) => {
+    // Registrar Salida con preventDefault y validación estricta de sesión
+    document.getElementById('salidaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      
-      const email = emailInput?.value.trim();
-      const password = passwordInput?.value.trim();
 
-      if (!email || !password) {
-        alert("Por favor, introduce tu correo y contraseña.");
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        alert("Sesión expirada o inactiva. Por favor, vuelva a iniciar sesión.");
+        actualizarVista(null);
         return;
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-      });
+      const btnSalida = document.getElementById('btnSubmitSalida');
+      btnSalida.disabled = true;
+      btnSalida.textContent = "Registrando...";
 
-      if (error) {
-        alert("Acceso denegado: " + error.message);
-      } else {
-        alert("¡Bienvenida de nuevo, Yesica!");
-        actualizarVista(data.session);
+      try {
+        const select = document.getElementById('salidaProducto');
+        const cantidad = parseInt(document.getElementById('salidaCantidad').value);
+        const motivo = document.getElementById('salidaMotivo').value;
+        const prod = productsList.find(p => p.id === select.value);
+
+        if (!prod || cantidad > prod.stock) {
+          alert('Stock insuficiente o producto no válido');
+          return;
+        }
+
+        const nuevoStock = prod.stock - cantidad;
+        
+        const { error: ventaError } = await supabaseClient.from('ventas').insert([{
+          producto_id: prod.id, 
+          producto_nombre: prod.nombre, 
+          cantidad, 
+          precio_unitario: prod.precio, 
+          costo_unitario: prod.costo || 0, 
+          motivo
+        }]);
+        if (ventaError) throw ventaError;
+
+        const { error: stockError } = await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
+        if (stockError) throw stockError;
+
+        document.getElementById('salidaForm').reset();
+        await loadProductsFromSupabase();
+        alert('¡Salida registrada exitosamente!');
+      } catch (err) {
+        alert('Error al registrar salida: ' + err.message);
+      } finally {
+        btnSalida.disabled = false;
+        btnSalida.textContent = "Registrar Salida";
       }
     });
-  }
-
-  // 5. ACCIÓN DEL BOTÓN SALIR / CERRAR SESIÓN
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      await supabase.auth.signOut();
-      window.location.reload(); 
-    });
-  }
-</script>
-
+  </script>
 </body>
 </html>
