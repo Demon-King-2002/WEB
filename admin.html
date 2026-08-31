@@ -367,36 +367,5 @@
       const prod = productsList.find(p => p.id === productoId);
       if (!prod || parseInt(cantidadVal) > prod.stock) {
         alert('Stock insuficiente o producto no válido');
-        return;
-      }
-
-      const btnSalida = document.getElementById('btnSubmitSalida');
-      btnSalida.disabled = true;
-      btnSalida.textContent = "Registrando...";
-
-      try {
-        const { error } = await supabase.from('ventas').insert([{
-          producto_nombre: productoVal,
-          cantidad: parseInt(cantidadVal),
-          motivo: motivoVal
-        }], { returning: 'minimal' });
-
-        if (error) throw error;
-
-        const nuevoStock = prod.stock - parseInt(cantidadVal);
-        const { error: stockError } = await supabase.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
-        if (stockError) throw stockError;
-
-        document.getElementById('salidaForm').reset();
-        await loadProductsFromSupabase();
-        alert('¡Salida registrada exitosamente!');
-      } catch (err) {
-        alert('Error al registrar salida: ' + err.message);
-      } finally {
-        btnSalida.disabled = false;
-        btnSalida.textContent = "Registrar Salida";
-      }
-    });
-  </script>
-</body>
-</html>
+        
+        // 1. CREDENCIALES REALES DE SUPABASEconst SUPABASE_URL = 'supabase.co';const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth: { persistSession: true, autoRefreshToken: true }});// 2. DETECTAR ELEMENTOS POR SU TEXTO EN PANTALLAconst emailInput = document.querySelector('input[type="email"]');const passwordInput = document.querySelector('input[type="password"]');const loginBtn = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Iniciar Sesión'));const logoutBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('Salir'));const formProducto = Array.from(document.querySelectorAll('form')).find(f => f.textContent.includes('Guardar Producto'));const btnSalida = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Registrar Salida'));// Buscar las dos secciones principales (Login y Panel)const loginSection = emailInput?.closest('div') || document.querySelector('form')?.parentElement;const adminPanel = document.querySelector('h3')?.closest('div') || document.getElementById('panel-admin');// 3. CONTROL DE SESIÓN AL CARGAR O VOLVER ATRÁSwindow.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));}setTimeout(async () => {const { data: { session } } = await supabase.auth.getSession();actualizarVista(session);}, 100);});function actualizarVista(session) {if (session) {if (loginSection) loginSection.style.display = 'none';if (adminPanel) adminPanel.style.display = 'block';} else {if (loginSection) loginSection.style.display = 'block';if (adminPanel) adminPanel.style.display = 'none';}}// 4. LÓGICA DE INICIAR SESIÓNif (loginBtn) {loginBtn.addEventListener('click', async (e) => {e.preventDefault();const email = emailInput?.value.trim();const password = passwordInput?.value.trim();if (!email || !password) {alert("Por favor, pon tu correo y contraseña.");return;}const { data, error } = await supabase.auth.signInWithPassword({ email, password });if (error) {alert("Error al entrar: " + error.message);} else {alert("¡Bienvenida de nuevo, Yesica!");actualizarVista(data.session);}});}// 5. GUARDAR UN PRODUCTO NUEVO (REGLAS DE TU SUPABASE)if (formProducto) {formProducto.addEventListener('submit', async (e) => {e.preventDefault();const nombre = document.querySelector('input[placeholder*="Nombre"]')?.value;const categoria = document.querySelector('select:nth-of-type(1)')?.value;const genero = document.querySelector('select:nth-of-type(2)')?.value;const precio = parseFloat(document.querySelector('input[placeholder*="Precio"]')?.value || 0);const costo = parseFloat(document.querySelector('input[placeholder*="Costo"]')?.value || 0);const stock = parseInt(document.querySelector('input[placeholder*="Existencias"]')?.value || 0);const tallasRaw = document.querySelector('input[placeholder*="Tallas"]')?.value || '';const tallas = tallasRaw.split(',').map(t => t.trim()).filter(t => t !== '');if (!nombre) {alert("Por favor, escribe el nombre del producto.");return;}const { error } = await supabase.from('productos').insert([{nombre, categoria, genero, precio, costo, stock, tallas, imagen_url: ''}]);if (error) {alert("Error al guardar: " + error.message);} else {alert("¡Producto guardado en tu inventario con éxito!");formProducto.reset();}});}// 6. REGISTRAR UNA SALIDA (VENTA)if (btnSalida) {btnSalida.addEventListener('click', async (e) => {e.preventDefault();const productoNombre = document.querySelector('input[placeholder*="Producto"]')?.value;const cantidad = parseInt(document.querySelector('input[type="number"]')?.value || 1);const motivo = document.querySelector('select:last-of-type')?.value || 'Venta';if (!productoNombre) {alert("Escribe el nombre del producto vendido.");return;}const { error } = await supabase.from('ventas').insert([{producto_nombre: productoNombre, cantidad, motivo}]);if (error) {alert("Error al registrar salida: " + error.message);} else {alert("¡Salida registrada con éxito!");document.querySelector('input[placeholder*="Producto"]').value = '';}});}// 7. CERRAR SESIÓN (BOTÓN SALIR)if (logoutBtn) {logoutBtn.addEventListener('click', async (e) => {e.preventDefault();await supabase.auth.signOut();window.location.reload();});}
