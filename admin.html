@@ -222,8 +222,8 @@
     }
 
     // Login Form Event
-    document.getElementById('loginForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
       const email = document.getElementById('login_email').value.trim();
       const password = document.getElementById('login_password').value.trim();
 
@@ -239,8 +239,8 @@
     });
 
     // Logout Button Event
-    document.getElementById('btnLogout').addEventListener('click', async (e) => {
-      e.preventDefault();
+    document.getElementById('btnLogout').addEventListener('click', async (event) => {
+      event.preventDefault();
       await supabaseClient.auth.signOut();
       actualizarVista(null);
     });
@@ -312,9 +312,9 @@
       }
     };
 
-    // Guardar Producto con preventDefault y validación estricta de sesión
-    document.getElementById('productForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Guardar Producto
+    document.getElementById('productForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); // <-- Detiene la recarga de la página
       
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
@@ -348,13 +348,15 @@
           imagen_url = publicURLData.publicUrl;
         }
 
+        // Mapeo exacto de las columnas
         const payload = { nombre, categoria, genero, precio, costo, stock, tallas, imagen_url };
         
         if (id) {
           const { error: updateError } = await supabaseClient.from('productos').update(payload).eq('id', id);
           if (updateError) throw updateError;
         } else {
-          const { error: insertError } = await supabaseClient.from('productos').insert([payload]);
+          // Inserción con parámetro options { returning: 'minimal' }
+          const { error: insertError } = await supabaseClient.from('productos').insert([payload], { returning: 'minimal' });
           if (insertError) throw insertError;
         }
         
@@ -371,9 +373,9 @@
       }
     });
 
-    // Registrar Salida con preventDefault y validación estricta de sesión
-    document.getElementById('salidaForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
+    // Registrar Salida
+    document.getElementById('salidaForm').addEventListener('submit', async (event) => {
+      event.preventDefault(); // <-- Detiene la recarga de la página
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
@@ -399,14 +401,15 @@
 
         const nuevoStock = prod.stock - cantidad;
         
-        const { error: ventaError } = await supabaseClient.from('ventas').insert([{
+        // Mapeo estricto solicitado y con returning: 'minimal'
+        const payloadVenta = {
           producto_id: prod.id, 
           producto_nombre: prod.nombre, 
-          cantidad, 
-          precio_unitario: prod.precio, 
-          costo_unitario: prod.costo || 0, 
-          motivo
-        }]);
+          cantidad: cantidad, 
+          motivo: motivo
+        };
+
+        const { error: ventaError } = await supabaseClient.from('ventas').insert([payloadVenta], { returning: 'minimal' });
         if (ventaError) throw ventaError;
 
         const { error: stockError } = await supabaseClient.from('productos').update({ stock: nuevoStock }).eq('id', prod.id);
