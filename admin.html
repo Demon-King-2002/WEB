@@ -20,7 +20,7 @@
       --shadow: 0 8px 30px rgba(0,0,0,0.04);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-    body { background: var(--bg-color); color: var(--text-dark); min-height: 100vh; }
+    body { background: var(--bg-color); color: var(--text-dark); min-height: 100vh; padding-bottom: 50px; }
     
     .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
     .login-card { background: var(--card-bg); padding: 40px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); width: 100%; max-width: 400px; text-align: center; }
@@ -34,7 +34,7 @@
     .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
     .btn-submit:hover { background: #000; }
     
-    .admin-dashboard-container { display: none; padding-bottom: 60px; }
+    .admin-dashboard-container { display: none; }
     header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
     .nav-links { display: flex; gap: 16px; }
     .nav-links a, .nav-links button { text-decoration: none; color: var(--text-dark); font-size: 13px; font-weight: 600; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 6px; }
@@ -47,10 +47,23 @@
     .admin-card h3 { font-size: 18px; font-weight: 800; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
     
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    
+    /* Estilos para el módulo de inventario con fotos múltiples debajo de Prod */
     .admin-products-list { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
-    .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-    .list-info h4 { font-size: 15px; margin-bottom: 4px; }
-    .list-info p { font-size: 12px; color: var(--text-muted); }
+    .salida-row { display: flex; justify-content: space-between; align-items: flex-start; background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); margin-bottom: 12px; box-shadow: var(--shadow); }
+    .prod-label-group { display: flex; flex-direction: column; width: 100%; padding-right: 15px; }
+    .prod-header-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+    .prod-name { font-weight: 700; font-size: 15px; color: var(--text-dark); margin: 2px 0 6px 0; }
+    
+    .inventario-miniatura { width: 55px; height: 55px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); margin: 4px 0 8px 0; }
+    
+    .admin-gallery { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; margin-bottom: 8px; }
+    .admin-thumb-box { position: relative; }
+    .admin-thumb-img { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .btn-del { position: absolute; top: -6px; right: -6px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    
+    .upload-btn-label { display: inline-flex; align-items: center; gap: 6px; background: #F0EDE6; border: 1px dashed var(--border); padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; color: var(--text-dark); margin-top: 4px; width: fit-content; }
+    .btn-action { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -96,8 +109,6 @@
         </div>
 
         <form id="productForm">
-          
-          <!-- Selector visible solo si elige "Existente" -->
           <div class="form-group" id="groupExistenteSelect" style="display: none;">
             <label>Seleccionar Producto Existente</label>
             <select class="form-control" id="selectProductoExistente" onchange="cargarDatosProductoExistente()"></select>
@@ -142,7 +153,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label id="lblExistencias">Existencias a Agregar / Total</label>
+              <label id="lblExistencias">Existencias Iniciales</label>
               <input type="number" class="form-control" name="prod_existencias" placeholder="Cantidad física" required>
             </div>
             <div class="form-group">
@@ -152,11 +163,11 @@
           </div>
 
           <div class="form-group">
-            <label>Imagen del Producto</label>
+            <label>Imagen Inicial / Principal</label>
             <input type="file" class="form-control" id="prod_imagen_file" accept="image/*">
           </div>
 
-          <button type="submit" class="btn-submit" id="btnGuardarProd">Guardar Producto</button>
+          <button type="submit" class="btn-submit" id="btnGuardarProd">Crear Nuevo Producto</button>
         </form>
       </div>
 
@@ -189,12 +200,15 @@
       </div>
     </div>
     
-    <div class="admin-products-list"></div>
+    <!-- Listado de Productos con Gestión de Múltiples Fotos y Miniatura debajo de Prod -->
+    <div class="admin-products-list" id="adminSalidasList"></div>
   </div>
 
   <script>
     const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
+    const STORAGE_BUCKET = 'productos-img';
+    
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true }
     });
@@ -260,7 +274,7 @@
       form.querySelector('select[name="prod_genero"]').value = prod.genero || 'dama';
       form.querySelector('input[name="prod_precio"]').value = prod.precio || 0;
       form.querySelector('input[name="prod_costo"]').value = prod.costo || 0;
-      form.querySelector('input[name="prod_existencias"]').value = 0; // Se deja en 0 para sumar nuevas unidades
+      form.querySelector('input[name="prod_existencias"]').value = 0; 
       
       let tallasStr = '';
       if (Array.isArray(prod.tallas)) tallasStr = prod.tallas.join(', ');
@@ -311,7 +325,6 @@
           const stockInput = parseInt(formProducto.querySelector('input[name="prod_existencias"]').value || 0);
           
           const tallasStr = formProducto.querySelector('input[name="prod_tallas"]').value;
-          // Tallas opcionales: si está vacío se guarda como array vacío o null
           const tallas = tallasStr.trim() ? tallasStr.split(',').map(t => t.trim()).filter(t => t.length > 0) : [];
           
           const fileInput = document.getElementById('prod_imagen_file');
@@ -326,13 +339,13 @@
               const fileExt = file.name.split('.').pop();
               const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.${fileExt}`;
               const { error: uploadError } = await supabaseClient.storage
-                .from('productos-img')
+                .from(STORAGE_BUCKET)
                 .upload(fileName, file);
 
               if (uploadError) throw new Error("Error al subir imagen: " + uploadError.message);
 
               const { data: publicURLData } = supabaseClient.storage
-                .from('productos-img')
+                .from(STORAGE_BUCKET)
                 .getPublicUrl(fileName);
 
               imagen_url = publicURLData.publicUrl;
@@ -346,12 +359,15 @@
               if (error) throw error;
               alert("¡Nuevo producto creado con éxito!");
             } else {
-              // Modo existente: actualizar datos y sumar stock
               const prodActual = productsList.find(p => p.id == selectedProductIdForEdit);
               const nuevoStock = (prodActual ? prodActual.stock : 0) + stockInput;
 
               const payload = { nombre, categoria, genero, precio, costo, stock: nuevoStock, tallas };
-              if (imagen_url) payload.imagen_url = imagen_url;
+              if (imagen_url) {
+                let currentImgs = prodActual.imagen_url ? prodActual.imagen_url.split(',').map(s => s.trim()) : [];
+                currentImgs.unshift(imagen_url);
+                payload.imagen_url = currentImgs.join(',');
+              }
 
               const { error } = await supabaseClient.from('productos').update(payload).eq('id', selectedProductIdForEdit);
               if (error) throw error;
@@ -411,12 +427,77 @@
         const { data, error } = await supabaseClient.from('productos').select('*');
         if (error) throw error;
         if (data) {
-          productsList = data;
+          productsList = data.map(item => {
+            let imgs = [];
+            if (item.imagen_url) {
+              imgs = item.imagen_url.split(/[\n,]+/).map(s => s.trim()).filter(s => s.length > 0);
+            }
+            return { ...item, imagenes: imgs };
+          });
           actualizarSelects();
-          renderProducts();
+          renderAdminInventario();
         }
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    async function adminAgregarMultiplesFotos(productId, fileList) {
+      if (!supabaseClient || !fileList || fileList.length === 0) return;
+      const producto = productsList.find(p => p.id == productId);
+      if (!producto) return;
+
+      let nuevasUrls = [];
+      for (let i = 0; i < fileList.length; i++) {
+        const archivo = fileList[i];
+        const fileName = `prod_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 6)}`;
+        
+        const { error: uploadError } = await supabaseClient.storage
+          .from(STORAGE_BUCKET)
+          .upload(fileName, archivo);
+
+        if (!uploadError) {
+          const { data: publicUrlData } = supabaseClient.storage
+            .from(STORAGE_BUCKET)
+            .getPublicUrl(fileName);
+          
+          if (publicUrlData?.publicUrl) {
+            nuevasUrls.push(publicUrlData.publicUrl);
+          }
+        }
+      }
+
+      let fotosFinales = [...producto.imagenes, ...nuevasUrls];
+      let imagenUrlString = fotosFinales.join(',');
+
+      const { error: updateError } = await supabaseClient
+        .from('productos')
+        .update({ imagen_url: imagenUrlString })
+        .eq('id', productId);
+
+      if (!updateError) {
+        await loadProductsFromSupabase();
+      } else {
+        alert("Error al actualizar las imágenes en la base de datos.");
+      }
+    }
+
+    async function adminEliminarFoto(productId, indexParaBorrar) {
+      const producto = productsList.find(p => p.id == productId);
+      if (!producto) return;
+
+      let fotosActualizadas = producto.imagenes.filter((_, idx) => idx !== indexParaBorrar);
+      let imagenUrlString = fotosActualizadas.join(',');
+
+      const { error } = await supabaseClient
+        .from('productos')
+        .update({ imagen_url: imagenUrlString })
+        .eq('id', productId);
+
+      if (!error) {
+        await loadProductsFromSupabase();
+      } else {
+        alert("No se pudo eliminar la imagen.");
       }
     }
 
@@ -432,18 +513,51 @@
       }
     }
 
-    function renderProducts() {
-      const grid = document.querySelector('.admin-products-list');
-      if (grid) {
-        grid.innerHTML = productsList.map(p => `
-          <div class="list-item">
-            <div class="list-info">
-              <h4>${p.nombre}</h4>
-              <p>Precio: Q${p.precio} | Costo: Q${p.costo || 0} | Stock: ${p.stock} | Tallas: ${Array.isArray(p.tallas) && p.tallas.length > 0 ? p.tallas.join(', ') : 'N/A'}</p>
+    function renderAdminInventario() {
+      const container = document.getElementById('adminSalidasList');
+      if (!container) return;
+
+      if (productsList.length === 0) {
+        container.innerHTML = `<p style="text-align:center; padding: 20px;">No hay productos registrados.</p>`;
+        return;
+      }
+
+      container.innerHTML = productsList.map(p => {
+        const fotoPrincipal = p.imagenes.length > 0 ? p.imagenes[0] : '';
+        const tallasStr = Array.isArray(p.tallas) && p.tallas.length > 0 ? p.tallas.join(', ') : 'N/A';
+
+        return `
+          <div class="salida-row">
+            <div class="prod-label-group">
+              <span class="prod-header-title">Prod</span>
+              ${fotoPrincipal ? `<img src="${fotoPrincipal}" class="inventario-miniatura" alt="Miniatura">` : '<span style="font-size:11px; color:#999; margin:4px 0;">Sin foto</span>'}
+              
+              <div class="prod-name">${p.nombre}</div>
+              <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 6px;">
+                Precio: Q${p.precio} | Costo: Q${p.costo || 0} | <strong>Stock: ${p.stock}</strong> | Tallas: ${tallasStr}
+              </p>
+              
+              <div class="admin-gallery">
+                ${p.imagenes.map((img, idx) => `
+                  <div class="admin-thumb-box">
+                    <img src="${img}" class="admin-thumb-img" alt="Foto">
+                    <button type="button" class="btn-del" onclick="adminEliminarFoto('${p.id}', ${idx})" title="Eliminar foto">×</button>
+                  </div>
+                `).join('')}
+              </div>
+
+              <label class="upload-btn-label">
+                <i class="fa-solid fa-cloud-arrow-up"></i> Agregar fotos (Múltiple)
+                <input type="file" accept="image/*" multiple style="display: none;" onchange="adminAgregarMultiplesFotos('${p.id}', this.files)">
+              </label>
+            </div>
+            
+            <div>
+              <button type="button" class="btn-action" onclick="document.querySelector('select[name=\\'salida_producto\\']').value='${p.id}'; window.scrollTo({top: document.getElementById('salidaForm').offsetTop - 50, behavior: 'smooth'});">Dar Salida</button>
             </div>
           </div>
-        `).join('');
-      }
+        `;
+      }).join('');
     }
   </script>
 </body>
