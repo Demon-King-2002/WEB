@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel de Administración - Inventario y Salidas</title>
+  <title>Panel de Administración - Salidas de Inventario y Fotos</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -22,25 +22,27 @@
     .admin-container { max-width: 900px; margin: 0 auto; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
     h2 { font-size: 20px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
     
-    /* Estilo estricto de la miniatura debajo de Prod */
+    /* Estructura para Salidas de Inventario con la miniatura debajo de Prod */
     .salida-row { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 10px; }
     .prod-label-group { display: flex; flex-direction: column; }
     .prod-header-title { font-size: 11px; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
     .prod-name { font-weight: 700; font-size: 14px; color: var(--text-dark); margin: 2px 0; }
-    .inventario-miniatura { width: 45px; height: 45px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; }
     
-    .admin-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    /* Miniatura debajo de Prod */
+    .inventario-miniatura { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); margin-top: 4px; margin-bottom: 6px; }
+    
+    .admin-gallery { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
     .admin-thumb-box { position: relative; }
-    .admin-thumb-img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .admin-thumb-img { width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
     .btn-del { position: absolute; top: -6px; right: -6px; background: #ff4d4d; color: white; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     
     .btn-action { background: var(--primary); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .upload-btn-label { display: inline-flex; align-items: center; gap: 6px; background: #F0EDE6; border: 1px dashed var(--border); padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; color: var(--text-dark); margin-top: 6px; }
+    .upload-btn-label { display: inline-flex; align-items: center; gap: 6px; background: #F0EDE6; border: 1px dashed var(--border); padding: 6px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600; color: var(--text-dark); margin-top: 8px; width: fit-content; }
   </style>
 </head>
 <body>
   <div class="admin-container">
-    <h2><i class="fa-solid fa-boxes-stacked"></i> Administración - Salidas de Inventario y Fotos</h2>
+    <h2><i class="fa-solid fa-boxes-stacked"></i> Administración - Salidas de Inventario</h2>
     <div id="adminSalidasList">Cargando inventario...</div>
   </div>
 
@@ -79,7 +81,6 @@
       renderAdminInventario();
     }
 
-    // Solución definitiva para carga múltiple asíncrona (carga todas las imágenes seleccionadas)
     async function adminAgregarMultiplesFotos(productId, fileList) {
       if (!supabaseClient || !fileList || fileList.length === 0) return;
       const producto = productsList.find(p => p.id == productId);
@@ -105,7 +106,6 @@
         }
       }
 
-      // Fusionar las imágenes existentes con las nuevas recién subidas sin perder ninguna
       let fotosFinales = [...producto.imagenes, ...nuevasUrls];
       let imagenUrlString = fotosFinales.join(',');
 
@@ -155,8 +155,8 @@
           <div class="salida-row">
             <div class="prod-label-group">
               <span class="prod-header-title">Prod</span>
+              ${fotoPrincipal ? `<img src="${fotoPrincipal}" class="inventario-miniatura" alt="Miniatura">` : '<span style="font-size:11px; color:#999; margin:4px 0;">Sin foto</span>'}
               <div class="prod-name">${p.nombre} (Stock: ${p.stock})</div>
-              ${fotoPrincipal ? `<img src="${fotoPrincipal}" class="inventario-miniatura" alt="Miniatura">` : '<span style="font-size:11px; color:#999;">Sin foto</span>'}
               
               <div class="admin-gallery">
                 ${p.imagenes.map((img, idx) => `
@@ -168,7 +168,7 @@
               </div>
 
               <label class="upload-btn-label">
-                <i class="fa-solid fa-cloud-arrow-up"></i> Agregar de galería (Múltiple)
+                <i class="fa-solid fa-cloud-arrow-up"></i> Agregar fotos (Múltiple)
                 <input type="file" accept="image/*" multiple style="display: none;" onchange="adminAgregarMultiplesFotos('${p.id}', this.files)">
               </label>
             </div>
