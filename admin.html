@@ -35,7 +35,7 @@
     .btn-submit { width: 100%; background: var(--primary); color: white; border: none; padding: 14px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
     .btn-submit:hover { background: #000; }
     
-    #adminDashboard { display: none; padding-bottom: 60px; }
+    .admin-dashboard-container { display: none; padding-bottom: 60px; }
     header { background: var(--card-bg); border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; }
     .nav-links { display: flex; gap: 16px; }
     .nav-links a, .nav-links button { text-decoration: none; color: var(--text-dark); font-size: 13px; font-weight: 600; background: none; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 6px; }
@@ -53,55 +53,53 @@
     .list-item { background: var(--card-bg); border: 1px solid var(--border); padding: 16px; border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
     .list-info h4 { font-size: 15px; margin-bottom: 4px; }
     .list-info p { font-size: 12px; color: var(--text-muted); }
-    .list-actions button { background: var(--bg-color); border: 1px solid var(--border); padding: 8px; border-radius: 6px; cursor: pointer; margin-left: 6px; }
-    .list-actions button:hover { background: var(--secondary); color: white; border-color: var(--secondary); }
   </style>
 </head>
 <body>
 
-  <div id="loginSection" class="login-container">
+  <!-- SECCIÓN DE LOGIN -->
+  <div class="login-container">
     <div class="login-card">
       <h2>Acceso Administrativo</h2>
-      <form id="loginForm">
+      <form>
         <div class="form-group">
-          <label for="login-email">Correo Electrónico</label>
-          <input type="email" class="form-control" id="login-email" placeholder="admin@miboutique.com" required>
+          <label>Correo Electrónico</label>
+          <input type="email" class="form-control" placeholder="admin@miboutique.com" required>
         </div>
         <div class="form-group">
-          <label for="login-password">Contraseña</label>
-          <input type="password" class="form-control" id="login-password" required>
+          <label>Contraseña</label>
+          <input type="password" class="form-control" required>
         </div>
-        <button type="button" class="btn-submit" id="btn-login">Iniciar Sesión</button>
+        <button type="submit" class="btn-submit">Iniciar Sesión</button>
       </form>
     </div>
   </div>
 
-  <div id="adminDashboard">
+  <!-- SECCIÓN DEL PANEL ADMINISTRATIVO -->
+  <div class="admin-dashboard-container">
     <header>
       <div style="font-weight: 800; font-size: 18px;">Boutique Yesica <span style="color: var(--text-muted); font-size:12px;">PWA</span></div>
       <div class="nav-links">
         <a href="inventario.html"><i class="fa-solid fa-warehouse"></i> Inventario</a>
         <a href="administracion.html"><i class="fa-solid fa-chart-line"></i> Finanzas</a>
-        <button id="btnLogout"><i class="fa-solid fa-power-off"></i> Salir</button>
+        <button type="button"><i class="fa-solid fa-power-off"></i> Salir</button>
       </div>
     </header>
 
     <div class="dashboard-grid">
+      <!-- Formulario para Guardar Producto -->
       <div class="admin-card">
         <h3><i class="fa-solid fa-box-open"></i> Ingresar / Editar Producto</h3>
-        <form id="productForm">
-          <input type="hidden" id="prodId">
-          <input type="hidden" id="prodImgUrl">
-
+        <form>
           <div class="form-group">
-            <label for="prodName">Nombre del Producto</label>
-            <input type="text" class="form-control" id="prodName" required>
+            <label>Nombre del Producto</label>
+            <input type="text" class="form-control" name="prod_nombre" placeholder="Nombre completo del producto" required>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="prodCategory">Categoría</label>
-              <select class="form-control" id="prodCategory" required>
+              <label>Categoría</label>
+              <select class="form-control" name="prod_categoria" required>
                 <option value="zapatos">Zapatos</option>
                 <option value="playeras">Playeras</option>
                 <option value="pantalones">Pantalones</option>
@@ -110,8 +108,8 @@
               </select>
             </div>
             <div class="form-group">
-              <label for="prodGender">Género</label>
-              <select class="form-control" id="prodGender" required>
+              <label>Género</label>
+              <select class="form-control" name="prod_genero" required>
                 <option value="dama">Dama</option>
                 <option value="caballero">Caballero</option>
                 <option value="unisex">Unisex</option>
@@ -121,50 +119,46 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="prodPrice">Precio (Q)</label>
-              <input type="number" step="0.01" class="form-control" id="prodPrice" required>
+              <label>Precio (Q)</label>
+              <input type="number" step="0.01" class="form-control" name="prod_precio" placeholder="0.00" required>
             </div>
             <div class="form-group">
-              <label for="prodCost">Costo (Q)</label>
-              <input type="number" step="0.01" class="form-control" id="prodCost">
+              <label>Costo (Q)</label>
+              <input type="number" step="0.01" class="form-control" name="prod_costo" placeholder="0.00">
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="prodStock">Existencias</label>
-              <input type="number" class="form-control" id="prodStock" required>
+              <label>Existencias</label>
+              <input type="number" class="form-control" name="prod_existencias" placeholder="Cantidad física" required>
             </div>
             <div class="form-group">
-              <label for="prodSizes">Tallas (comas)</label>
-              <input type="text" class="form-control" id="prodSizes" required>
+              <label>Tallas (comas)</label>
+              <input type="text" class="form-control" name="prod_tallas" placeholder="Ej: S, M, L, XL" required>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="prodImgFile">Fotografía</label>
-            <input type="file" accept="image/*" class="form-control" id="prodImgFile">
-          </div>
-
-          <button type="submit" class="btn-submit" id="btnSubmitProd">Guardar Producto</button>
+          <button type="submit" class="btn-submit">Guardar Producto</button>
         </form>
       </div>
 
+      <!-- Formulario para Registrar Salida -->
       <div class="admin-card">
-        <h3><i class="fa-solid fa-truck-ramp-box"></i> Registrar Salida</h3>
-        <form id="salidaForm">
+        <h3><i class="fa-solid fa-truck-ramp-box"></i> Salida de Inventario</h3>
+        <form>
           <div class="form-group">
-            <label for="salidaProducto">Producto</label>
-            <select class="form-control" id="salidaProducto" required></select>
+            <label>Producto</label>
+            <select class="form-control" name="salida_producto" required></select>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label for="salidaCantidad">Cantidad</label>
-              <input type="number" min="1" class="form-control" id="salidaCantidad" value="1" required>
+              <label>Cantidad</label>
+              <input type="number" min="1" class="form-control" name="salida_cantidad" value="1" required>
             </div>
             <div class="form-group">
-              <label for="salidaMotivo">Motivo</label>
-              <select class="form-control" id="salidaMotivo" required>
+              <label>Motivo</label>
+              <select class="form-control" name="salida_motivo" required>
                 <option value="venta">Venta</option>
                 <option value="dañado">Dañado</option>
                 <option value="perdida">Pérdida</option>
@@ -173,16 +167,17 @@
               </select>
             </div>
           </div>
-          <button type="submit" class="btn-submit" id="btnSubmitSalida">Registrar Salida</button>
+          <button type="submit" class="btn-submit">Registrar Salida</button>
         </form>
       </div>
     </div>
     
-    <div class="admin-products-list" id="productsGrid"></div>
+    <div class="admin-products-list"></div>
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://zfbvhdkoknzrwqfjthsb.supabase.co';
+    // 1. CREDENCIALES EXACTAS DE SUPABASE
+    const SUPABASE_URL = 'supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true }
@@ -190,182 +185,205 @@
 
     let productsList = [];
 
-    window.addEventListener('load', async () => {
+    // 2. CONTROL DE VISTA Y CARGA AL INICIAR
+    window.addEventListener('load', () => {
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));
       }
+      
+      // Delay de 100ms crítico para que la memoria del teléfono reaccione a Supabase
+      setTimeout(async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        actualizarVista(session);
+        if (session) {
+          await loadProductsFromSupabase();
+        }
+      }, 100);
 
-      const { data: { session } } = await supabase.auth.getSession();
-      actualizarVista(session);
-
-      if (session) {
-        loadProductsFromSupabase();
-      }
+      configurarEventosDOM();
     });
 
     function actualizarVista(session) {
-      const loginSection = document.getElementById('loginSection');
-      const adminDashboard = document.getElementById('adminDashboard');
+      // Búsqueda orientada a clases estructurales, nunca a IDs
+      const loginSection = document.querySelector('.login-container');
+      const adminPanel = document.querySelector('.admin-dashboard-container');
+
       if (session) {
-        loginSection.style.display = 'none';
-        adminDashboard.style.display = 'block';
+        if (loginSection) loginSection.style.display = 'none';
+        if (adminPanel) adminPanel.style.display = 'block';
       } else {
-        loginSection.style.display = 'flex';
-        adminDashboard.style.display = 'none';
+        if (loginSection) loginSection.style.display = 'flex';
+        if (adminPanel) adminPanel.style.display = 'none';
       }
     }
 
-    document.getElementById('btn-login').addEventListener('click', async (event) => {
-      event.preventDefault();
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value.trim();
+    // 3. CAPTURA Y ASIGNACIÓN DE EVENTOS MEDIANTE TEXTO Y TIPOS
+    function configurarEventosDOM() {
+      // Localizadores dinámicos por tipo o por texto contenido (Sin IDs)
+      const emailInput = document.querySelector('input[type="email"]');
+      const passwordInput = document.querySelector('input[type="password"]');
+      const loginBtn = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Iniciar Sesión'));
+      const logoutBtn = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Salir'));
+      const formProducto = Array.from(document.querySelectorAll('form')).find(f => f.textContent.includes('Guardar Producto'));
+      const btnSalida = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Registrar Salida'));
 
-      try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        alert("¡Bienvenida de nuevo, Yesica!");
-        actualizarVista(data.session);
-        loadProductsFromSupabase();
-      } catch (error) {
-        alert('Acceso denegado: ' + error.message);
+      // Evento de Login
+      if (loginBtn) {
+        // Enlazar el form contenedor o el botón directamente
+        const formLogin = loginBtn.closest('form');
+        formLogin.addEventListener('submit', async (e) => {
+          e.preventDefault(); // <-- Detiene la recarga (CRÍTICO)
+          
+          const email = emailInput?.value.trim();
+          const password = passwordInput?.value.trim();
+
+          if (!email || !password) return;
+
+          try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            alert("¡Bienvenida de nuevo, Yesica!");
+            actualizarVista(data.session);
+            loadProductsFromSupabase();
+          } catch (error) {
+            alert('Acceso denegado: ' + error.message);
+          }
+        });
       }
-    });
 
-    document.getElementById('btnLogout').addEventListener('click', async (event) => {
-      event.preventDefault();
-      await supabase.auth.signOut();
-      actualizarVista(null);
-    });
+      // Evento para Cerrar Sesión
+      if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+          e.preventDefault(); // <-- Detiene la recarga (CRÍTICO)
+          await supabase.auth.signOut();
+          actualizarVista(null);
+        });
+      }
 
+      // Evento para Guardar Producto
+      if (formProducto) {
+        formProducto.addEventListener('submit', async (e) => {
+          e.preventDefault(); // <-- Detiene la recarga (CRÍTICO)
+          
+          const btnSubmitProd = formProducto.querySelector('button[type="submit"]');
+          
+          const nombre = formProducto.querySelector('input[name="prod_nombre"]').value;
+          const categoria = formProducto.querySelector('select[name="prod_categoria"]').value;
+          const genero = formProducto.querySelector('select[name="prod_genero"]').value;
+          const precio = parseFloat(formProducto.querySelector('input[name="prod_precio"]').value);
+          const costo = parseFloat(formProducto.querySelector('input[name="prod_costo"]').value || 0);
+          
+          // Extracción desde el input de "Existencias" y mapeo hacia "stock"
+          const existenciasRaw = formProducto.querySelector('input[name="prod_existencias"]').value;
+          const stock = parseInt(existenciasRaw);
+          
+          // Convertir el texto separado por comas en un arreglo limpio para la base de datos
+          const tallasStr = formProducto.querySelector('input[name="prod_tallas"]').value;
+          const tallas = tallasStr.split(',').map(t => t.trim());
+
+          if (btnSubmitProd) {
+            btnSubmitProd.disabled = true;
+            btnSubmitProd.textContent = "Guardando...";
+          }
+
+          try {
+            const { error } = await supabase.from('productos').insert([{
+              nombre, categoria, genero, precio, costo, stock, tallas
+            }]);
+
+            if (error) throw error;
+            
+            alert("¡Producto guardado exitosamente!");
+            formProducto.reset();
+            loadProductsFromSupabase();
+          } catch (err) {
+            alert("Error al guardar: " + err.message);
+          } finally {
+            if (btnSubmitProd) {
+              btnSubmitProd.disabled = false;
+              btnSubmitProd.textContent = "Guardar Producto";
+            }
+          }
+        });
+      }
+
+      // Evento para Registrar Salida (Venta)
+      if (btnSalida) {
+        const formSalida = btnSalida.closest('form');
+        if (formSalida) {
+          formSalida.addEventListener('submit', async (e) => {
+            e.preventDefault(); // <-- Detiene la recarga (CRÍTICO)
+            
+            const selectProducto = formSalida.querySelector('select[name="salida_producto"]');
+            // Extraer limpiamente solo el nombre (descartando el texto del inventario visual)
+            const productoNombre = selectProducto.options[selectProducto.selectedIndex]?.text.split(' (')[0];
+            const cantidad = parseInt(formSalida.querySelector('input[name="salida_cantidad"]').value);
+            const motivo = formSalida.querySelector('select[name="salida_motivo"]').value;
+
+            btnSalida.disabled = true;
+            btnSalida.textContent = "Registrando...";
+
+            try {
+              const { error } = await supabase.from('ventas').insert([{
+                producto_nombre: productoNombre,
+                cantidad: cantidad,
+                motivo: motivo
+              }]);
+
+              if (error) throw error;
+              
+              alert('¡Salida registrada exitosamente!');
+              formSalida.reset();
+              loadProductsFromSupabase();
+            } catch (err) {
+              alert('Error al registrar salida: ' + err.message);
+            } finally {
+              btnSalida.disabled = false;
+              btnSalida.textContent = "Registrar Salida";
+            }
+          });
+        }
+      }
+    }
+
+    // Funciones auxiliares visuales
     async function loadProductsFromSupabase() {
       try {
         const { data, error } = await supabase.from('productos').select('*');
         if (error) throw error;
         if (data) {
-          productsList = data.map(item => ({
-            ...item, tallas: typeof item.tallas === 'string' ? item.tallas.split(',').map(s => s.trim()) : item.tallas
-          }));
+          productsList = data;
+          actualizarSelectSalidas();
+          renderProducts();
         }
       } catch (e) {
-        console.error(e);
+        console.error("Error cargando el listado:", e);
       }
-      renderProducts();
-      actualizarSelectSalidas();
     }
 
     function actualizarSelectSalidas() {
-      const select = document.getElementById('salidaProducto');
-      select.innerHTML = productsList.map(p => `<option value="${p.id}" data-nombre="${p.nombre}">${p.nombre} (Stock: ${p.stock})</option>`).join('');
+      const formSalida = Array.from(document.querySelectorAll('form')).find(f => f.textContent.includes('Registrar Salida'));
+      if (formSalida) {
+        const select = formSalida.querySelector('select[name="salida_producto"]');
+        if (select) {
+          select.innerHTML = productsList.map(p => `<option value="${p.id}">${p.nombre} (Stock: ${p.stock})</option>`).join('');
+        }
+      }
     }
 
     function renderProducts() {
-      const grid = document.getElementById('productsGrid');
-      grid.innerHTML = productsList.map(p => `
-        <div class="list-item">
-          <div class="list-info">
-            <h4>${p.nombre}</h4>
-            <p>Q${p.precio} | Stock: ${p.stock} | Cat: ${p.categoria}</p>
+      const grid = document.querySelector('.admin-products-list');
+      if (grid) {
+        grid.innerHTML = productsList.map(p => `
+          <div class="list-item">
+            <div class="list-info">
+              <h4>${p.nombre}</h4>
+              <p>Q${p.precio} | Stock: ${p.stock} | Cat: ${p.categoria}</p>
+            </div>
           </div>
-          <div class="list-actions">
-            <button onclick="editProduct('${p.id}')" type="button"><i class="fa-solid fa-pen"></i></button>
-            <button onclick="deleteProduct('${p.id}')" type="button"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
-
-    window.editProduct = function(id) {
-      const prod = productsList.find(p => p.id === id);
-      if (prod) {
-        document.getElementById('prodId').value = prod.id;
-        document.getElementById('prodName').value = prod.nombre;
-        document.getElementById('prodCategory').value = prod.categoria;
-        document.getElementById('prodGender').value = prod.genero;
-        document.getElementById('prodPrice').value = prod.precio;
-        document.getElementById('prodCost').value = prod.costo || '';
-        document.getElementById('prodStock').value = prod.stock;
-        document.getElementById('prodSizes').value = Array.isArray(prod.tallas) ? prod.tallas.join(', ') : prod.tallas;
-        document.getElementById('prodImgUrl').value = prod.imagen_url || '';
-        window.scrollTo(0,0);
-      }
-    };
-
-    window.deleteProduct = async function(id) {
-      if (confirm('¿Eliminar producto?')) {
-        const { error } = await supabase.from('productos').delete().eq('id', id);
-        if (error) { alert("Error al eliminar: " + error.message); return; }
-
-        productsList = productsList.filter(p => p.id !== id);
-        renderProducts();
-        actualizarSelectSalidas();
-      }
-    };
-
-    document.getElementById('productForm').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      
-      const id = document.getElementById('prodId').value;
-      const nombreVal = document.getElementById('prodName').value;
-      const catVal = document.getElementById('prodCategory').value;
-      const genVal = document.getElementById('prodGender').value;
-      const precioVal = document.getElementById('prodPrice').value;
-      const costoVal = document.getElementById('prodCost').value;
-      const stockVal = document.getElementById('prodStock').value;
-      const tallasVal = document.getElementById('prodSizes').value;
-
-      const btnSubmit = document.getElementById('btnSubmitProd');
-      btnSubmit.disabled = true;
-      btnSubmit.textContent = "Guardando...";
-
-      try {
-        if (id) {
-          const { error } = await supabase.from('productos').update({
-            nombre: nombreVal,
-            categoria: catVal,
-            genero: genVal,
-            precio: parseFloat(precioVal),
-            costo: parseFloat(costoVal),
-            stock: parseInt(stockVal),
-            tallas: tallasVal.split(',').map(t => t.trim())
-          }).eq('id', id);
-          if (error) throw error;
-        } else {
-          const { error } = await supabase.from('productos').insert([{
-            nombre: nombreVal,
-            categoria: catVal,
-            genero: genVal,
-            precio: parseFloat(precioVal),
-            costo: parseFloat(costoVal),
-            stock: parseInt(stockVal),
-            tallas: tallasVal.split(',').map(t => t.trim())
-          }], { returning: 'minimal' });
-
-          if (error) throw error;
-        }
-        
-        document.getElementById('productForm').reset();
-        document.getElementById('prodId').value = '';
-        await loadProductsFromSupabase();
-        alert("¡Producto guardado exitosamente!");
-      } catch (err) {
-        alert("Error al guardar: " + err.message);
-      } finally {
-        btnSubmit.disabled = false;
-        btnSubmit.textContent = "Guardar Producto";
-      }
-    });
-
-    document.getElementById('salidaForm').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      
-      const select = document.getElementById('salidaProducto');
-      const productoId = select.value;
-      const productoVal = select.options[select.selectedIndex].dataset.nombre;
-      const cantidadVal = document.getElementById('salidaCantidad').value;
-      const motivoVal = document.getElementById('salidaMotivo').value;
-
-      const prod = productsList.find(p => p.id === productoId);
-      if (!prod || parseInt(cantidadVal) > prod.stock) {
-        alert('Stock insuficiente o producto no válido');
-        
-        // 1. CREDENCIALES REALES DE SUPABASEconst SUPABASE_URL = 'supabase.co';const SUPABASE_ANON_KEY = 'sb_publishable_ZS0wdekGGQ0FI77CPFmsbw_rsS1FkEI';const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {auth: { persistSession: true, autoRefreshToken: true }});// 2. DETECTAR ELEMENTOS POR SU TEXTO EN PANTALLAconst emailInput = document.querySelector('input[type="email"]');const passwordInput = document.querySelector('input[type="password"]');const loginBtn = Array.from(document.querySelectorAll('button, input[type="submit"]')).find(el => el.textContent.includes('Iniciar Sesión'));const logoutBtn = Array.from(document.querySelectorAll('a, button')).find(el => el.textContent.includes('Salir'));const formProducto = Array.from(document.querySelectorAll('form')).find(f => f.textContent.includes('Guardar Producto'));const btnSalida = Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Registrar Salida'));// Buscar las dos secciones principales (Login y Panel)const loginSection = emailInput?.closest('div') || document.querySelector('form')?.parentElement;const adminPanel = document.querySelector('h3')?.closest('div') || document.getElementById('panel-admin');// 3. CONTROL DE SESIÓN AL CARGAR O VOLVER ATRÁSwindow.addEventListener('load', () => {if ('serviceWorker' in navigator) {navigator.serviceWorker.register('./sw.js').catch(err => console.error(err));}setTimeout(async () => {const { data: { session } } = await supabase.auth.getSession();actualizarVista(session);}, 100);});function actualizarVista(session) {if (session) {if (loginSection) loginSection.style.display = 'none';if (adminPanel) adminPanel.style.display = 'block';} else {if (loginSection) loginSection.style.display = 'block';if (adminPanel) adminPanel.style.display = 'none';}}// 4. LÓGICA DE INICIAR SESIÓNif (loginBtn) {loginBtn.addEventListener('click', async (e) => {e.preventDefault();const email = emailInput?.value.trim();const password = passwordInput?.value.trim();if (!email || !password) {alert("Por favor, pon tu correo y contraseña.");return;}const { data, error } = await supabase.auth.signInWithPassword({ email, password });if (error) {alert("Error al entrar: " + error.message);} else {alert("¡Bienvenida de nuevo, Yesica!");actualizarVista(data.session);}});}// 5. GUARDAR UN PRODUCTO NUEVO (REGLAS DE TU SUPABASE)if (formProducto) {formProducto.addEventListener('submit', async (e) => {e.preventDefault();const nombre = document.querySelector('input[placeholder*="Nombre"]')?.value;const categoria = document.querySelector('select:nth-of-type(1)')?.value;const genero = document.querySelector('select:nth-of-type(2)')?.value;const precio = parseFloat(document.querySelector('input[placeholder*="Precio"]')?.value || 0);const costo = parseFloat(document.querySelector('input[placeholder*="Costo"]')?.value || 0);const stock = parseInt(document.querySelector('input[placeholder*="Existencias"]')?.value || 0);const tallasRaw = document.querySelector('input[placeholder*="Tallas"]')?.value || '';const tallas = tallasRaw.split(',').map(t => t.trim()).filter(t => t !== '');if (!nombre) {alert("Por favor, escribe el nombre del producto.");return;}const { error } = await supabase.from('productos').insert([{nombre, categoria, genero, precio, costo, stock, tallas, imagen_url: ''}]);if (error) {alert("Error al guardar: " + error.message);} else {alert("¡Producto guardado en tu inventario con éxito!");formProducto.reset();}});}// 6. REGISTRAR UNA SALIDA (VENTA)if (btnSalida) {btnSalida.addEventListener('click', async (e) => {e.preventDefault();const productoNombre = document.querySelector('input[placeholder*="Producto"]')?.value;const cantidad = parseInt(document.querySelector('input[type="number"]')?.value || 1);const motivo = document.querySelector('select:last-of-type')?.value || 'Venta';if (!productoNombre) {alert("Escribe el nombre del producto vendido.");return;}const { error } = await supabase.from('ventas').insert([{producto_nombre: productoNombre, cantidad, motivo}]);if (error) {alert("Error al registrar salida: " + error.message);} else {alert("¡Salida registrada con éxito!");document.querySelector('input[placeholder*="Producto"]').value = '';}});}// 7. CERRAR SESIÓN (BOTÓN SALIR)if (logoutBtn) {logoutBtn.addEventListener('click', async (e) => {e.preventDefault();await supabase.auth.signOut();window.location.reload();});}
+  </script>
+</body>
+</html>
